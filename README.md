@@ -266,11 +266,3 @@ Contributions, ideas, and feedback are welcome!
 5. Open a Pull Request
 
 ---
-
-<div align="center">
-
-Built with ❤️ by [samchinmaya](https://github.com/samchinmaya)
-
-⭐ Star this repo if you find it helpful!
-
-</div>
