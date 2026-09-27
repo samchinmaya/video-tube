@@ -191,6 +191,12 @@ the port is running at 3000
 | `avatar` | File (image) | ✅ |
 | `coverImage` | File (image) | ✅ |
 
+> 📮 **Testing in Postman**
+> - Put **all six fields** in *Body → form-data* — the text fields too.
+> - Postman sends **only the selected body type**: if *form-data* is selected, anything in the *raw* JSON tab is ignored.
+> - Switch the `avatar` and `coverImage` rows from **Text** to **File** and pick images from your computer — a link won't work.
+> - Keys are case-sensitive: `fullname` (all lowercase), `coverImage` (capital **I**).
+
 **What happens on the server, in order:**
 
 ```
@@ -218,7 +224,17 @@ the port is running at 3000
 
 ### Response format
 
-Every response follows the same shape:
+Responses are built with two helper classes in `src/utils/`:
+
+```js
+// ✅ Success — APIresponse sends itself with the right status code
+return new APIresponse(201, user, "User registered successfully").json(res)
+
+// ❌ Error — throw an APIError; asyncHandler passes it to Express
+throw new APIError(400, "All fields are required")
+```
+
+They produce these shapes:
 
 ```jsonc
 // ✅ Success
@@ -238,6 +254,22 @@ Every response follows the same shape:
   "errors": []
 }
 ```
+
+> ⚠️ A JSON error-handling middleware is not added yet, so thrown errors currently reach Express's default handler — it uses the right status code but replies with an **HTML** page. See the [Roadmap](#-roadmap).
+
+---
+
+## 🧰 Troubleshooting
+
+| You see | Cause | Fix |
+|---|---|---|
+| `Cannot POST /register` (404) | Wrong URL | Use the full path: `http://localhost:3000/api/v1/user/register` |
+| `All fields are required` (400) | A text field is missing or empty — often because it's in the *raw* tab while *form-data* is selected | Add `username`, `email`, `fullname`, `password` as **form-data** rows |
+| `Avatar is required` (400) | The image was sent as Text or a link | Set the `avatar` row type to **File** and choose an image |
+| `Avatar upload failed` (500) | Cloudinary rejected the upload — usually a wrong or cut-off `API_KEY` / `API_SECRET` (`unknown api_key`, 401) | Copy both from **Cloudinary Console → Settings → API Keys** into `.env`, check `CLOUDINARY_CLOUD_NAME`, then **restart the server** |
+| `.env` change has no effect | `.env` is only read when the server starts; `node --watch` doesn't reload it | Stop the server (`ctrl + c`) and run `npm run dev` again |
+| `ERR_MODULE_NOT_FOUND` | A relative import is missing `.js` (required with ES modules) | Write the full file name, e.g. `"../utils/asynchandler.js"` |
+| Leftover files in `public/temp` | A request failed *before* the Cloudinary step, so the temp files weren't cleaned up | Delete them by hand (keep `.gitkeep`) — automatic cleanup is on the Roadmap |
 
 ---
 
@@ -284,6 +316,8 @@ Every response follows the same shape:
 - [x] User and Video models
 - [x] File upload pipeline (Multer + Cloudinary)
 - [ ] User registration with avatar upload
+- [ ] JSON error-handling middleware (+ automatic cleanup of `public/temp` on failed requests)
+- [ ] Ignore uploaded files in git (`public/temp/*`, keep `.gitkeep`)
 - [ ] Login, logout, and refresh-token rotation
 - [ ] JWT auth middleware for protected routes
 - [ ] Video upload, update, delete, and paginated feed
