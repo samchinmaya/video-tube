@@ -5,7 +5,7 @@ import { uploadOnCloudinary } from "../utils/Cloudinary.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
 const registerUser = asyncHandler(async (req, res) => {
-  const { username, email, fullname, avatar, password } = req.body;
+  const { username, email, fullname, password } = req.body;
   // check if username, email, and password are provided
   if (!username || !email || !password || !fullname || [fullname,email,password,username].some((field) => field.trim() === "")) {
     throw new APIError(400, "All fields are required");
