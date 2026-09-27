@@ -82,13 +82,12 @@ const registerUser = asyncHandler(async (req, res) => {
 
 // user login
 //
-
 const loginUser = async (req, res) => {
   const {username, email, password} = req.body
-  if (!username || !password) {
+  if (!username && !password) {
     throw new APIError(400, "Username and password are required")
   }
-  const user = await User.findOne({$or: [{username}, {email}]})
+  const user = await User.findOne({$or: [{username}, {email}]}).select("+password")
   if (!user) {
     throw new APIError(404, "User not found")
   }
@@ -108,9 +107,29 @@ const loginUser = async (req, res) => {
   return res.status(200)
     .cookie("accessToken", accessToken, options)// accessToken and refreshToken are sent as cookies and set the cookie options
     .cookie("refreshToken", refreshToken, options)// accessToken and refreshToken are sent as cookies and set the cookie options
-    .json(new APIresponse(200, {loggedInUser, accessToken, refreshToken}, "User logged in successfully"))
+    .json(new APIresponse(200,
+      {
+        user: loggedInUser, accessToken
+      }, "User logged in successfully"))
 }
 
+const logoutUser = async (req, res) => {
+  await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      refreshToken: null,
+    }, {
+      new: true,
+    }
+  )
+  const options = {
+    httpOnly: true,
+    secure: true,
+  }
+  return res.status(200)
+    .cookie("accessToken", "", options)
+    .cookie("refreshToken", "", options)
+    .json(new APIresponse(200, {}, "User logged out successfully"))
+}
 
-
-export { registerUser, loginUser };
+export { registerUser, loginUser, logoutUser };

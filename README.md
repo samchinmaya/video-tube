@@ -41,8 +41,10 @@ VideoTube is a learning project that rebuilds the core of a video platform like 
 | Video model — owner, views, likes, publish state, pagination plugin | ✅ Done |
 | File uploads (Multer → Cloudinary) | ✅ Done |
 | Standard API response & error classes | ✅ Done |
-| User registration | 🛠️ In progress |
-| Login / logout / refresh token | 📋 Planned |
+| User registration (with avatar & cover image upload) | ✅ Done |
+| Login / logout with JWT (httpOnly cookies + Bearer token) | ✅ Done |
+| `auth` middleware for protected routes | ✅ Done |
+| Refresh access token | 📋 Planned |
 | Video upload, update, delete & feed | 📋 Planned |
 | Comments, likes, subscriptions, watch history | 📋 Planned |
 
@@ -82,6 +84,7 @@ video-tube/
 │   ├── routes/
 │   │   └── user.routes.js       # User API endpoints
 │   ├── middlewares/
+│   │   ├── auth.middleware.js   # Verifies the JWT and sets req.user
 │   │   └── multer.middleware.js # Saves uploaded files to public/temp
 │   └── utils/
 │       ├── asynchandler.js      # Wraps async routes so errors reach Express
@@ -174,9 +177,11 @@ the port is running at 3000
 
 | Method | Endpoint | Description | Status |
 |---|---|---|---|
-| `POST` | `/user/register` | Create a new account | 🛠️ In progress |
-| `POST` | `/user/login` | Log in and receive tokens | 📋 Planned |
-| `POST` | `/user/logout` | Log out and clear tokens | 📋 Planned |
+| `POST` | `/user/register` | Create a new account | ✅ |
+| `POST` | `/user/login` | Log in and receive tokens | ✅ |
+| `POST` | `/user/logout` | Log out and clear tokens 🔒 | ✅ |
+
+🔒 = requires authentication (see [Authentication](#-authentication)).
 
 ### 📝 Register a user
 
@@ -221,6 +226,58 @@ the port is running at 3000
 > Both layers do different jobs:
 > - **Controller check (step 2)** — catches duplicates *early* with a clear `409` message, and **before** the Cloudinary uploads, so no images are wasted on a sign-up that would fail.
 > - **`unique: true` in the schema** — the final guarantee. It blocks the rare case of two identical sign-ups arriving at the same moment. On its own it would only produce a raw MongoDB `E11000` error (a confusing `500`) *after* the uploads.
+
+### 🔑 Log in
+
+`POST /api/v1/user/login` — send as **raw JSON** (no files here):
+
+```json
+{ "username": "sam", "password": "secret123" }
+```
+
+You can log in with `username` **or** `email`; `password` is always required.
+
+**What happens on the server:**
+
+```
+1. Find the user by username OR email  → loaded with .select("+password"),
+                                          because the schema hides the password (select: false)
+2. Check the password                   → bcrypt.compare via user.isPasswordCorrect()
+3. Create tokens                        → access token (1d) + refresh token (10d);
+                                          the refresh token is saved on the user
+4. Respond                              → tokens set as httpOnly cookies,
+                                          user + accessToken in the JSON body
+```
+
+| Status | When |
+|---|---|
+| `200` | Logged in — returns `user` and `accessToken`, and sets the `accessToken` and `refreshToken` cookies |
+| `400` | Missing username/email or password |
+| `404` | No user with that username or email |
+| `401` | Wrong password |
+
+> 🔒 The **refresh token is never put in the JSON body** — it only travels in an **httpOnly cookie**, which JavaScript in the browser can't read. The access token is short-lived, so it's also returned in the body for the client to use.
+
+### 🚪 Log out
+
+`POST /api/v1/user/logout` — protected: send the access token (see below).
+
+Clears the user's saved refresh token in the database and resets both cookies. Returns `200` "User logged out successfully".
+
+### 🔐 Authentication
+
+Protected routes run the `auth` middleware first. It accepts the access token from **either**:
+
+- the `accessToken` **cookie** (browsers send it automatically), or
+- an **`Authorization: Bearer <accessToken>`** header.
+
+If the token is valid, the middleware loads the user and puts it on `req.user`; otherwise it responds `401 Unauthorized`.
+
+```js
+UserRouter.route('/logout').post(auth, logoutUser);   // auth runs first, then the controller
+```
+
+> 📮 **In Postman:** the cookies are marked `secure`, so Postman won't send them back over plain `http://localhost`. For protected routes, copy `accessToken` from the login response and use **Authorization → Bearer Token**.
 
 ### Response format
 
@@ -269,6 +326,8 @@ They produce these shapes:
 | `Avatar upload failed` (500) | Cloudinary rejected the upload — usually a wrong or cut-off `API_KEY` / `API_SECRET` (`unknown api_key`, 401) | Copy both from **Cloudinary Console → Settings → API Keys** into `.env`, check `CLOUDINARY_CLOUD_NAME`, then **restart the server** |
 | `.env` change has no effect | `.env` is only read when the server starts; `node --watch` doesn't reload it | Stop the server (`ctrl + c`) and run `npm run dev` again |
 | `ERR_MODULE_NOT_FOUND` | A relative import is missing `.js` (required with ES modules) | Write the full file name, e.g. `"../utils/asynchandler.js"` |
+| `data and hash arguments required` (500) on login | The password wasn't loaded — the schema hides it with `select: false` — or no password was sent | Load it with `.select("+password")` and require `password` in the request |
+| `401 Unauthorized` on logout | No access token was sent (Postman doesn't send `secure` cookies over `http://localhost`) | Use **Authorization → Bearer Token** with the `accessToken` from login |
 | Leftover files in `public/temp` | A request failed *before* the Cloudinary step, so the temp files weren't cleaned up | Delete them by hand (keep `.gitkeep`) — automatic cleanup is on the Roadmap |
 
 ---
@@ -315,11 +374,12 @@ They produce these shapes:
 - [x] Project setup, database connection, and core utilities
 - [x] User and Video models
 - [x] File upload pipeline (Multer + Cloudinary)
-- [ ] User registration with avatar upload
+- [x] User registration with avatar upload
 - [ ] JSON error-handling middleware (+ automatic cleanup of `public/temp` on failed requests)
 - [ ] Ignore uploaded files in git (`public/temp/*`, keep `.gitkeep`)
-- [ ] Login, logout, and refresh-token rotation
-- [ ] JWT auth middleware for protected routes
+- [x] Login and logout (JWT in httpOnly cookies)
+- [x] JWT auth middleware for protected routes
+- [ ] Refresh-token endpoint to get a new access token
 - [ ] Video upload, update, delete, and paginated feed
 - [ ] Comments, likes, subscriptions, and playlists
 - [ ] Watch history

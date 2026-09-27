@@ -1,4 +1,3 @@
-import 'dotenv/config'; // must be the first import so every file below sees process.env
 
 import {ConnectDB}  from "./db/index.js";
 import { app } from "./app.js";
