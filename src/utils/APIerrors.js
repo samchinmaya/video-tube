@@ -1,4 +1,4 @@
-export class apierrors extends Error{
+class APIError extends Error{
     constructor(
         statusCode,
         message="Something Went Wrong",
@@ -10,7 +10,7 @@ export class apierrors extends Error{
         super(message)
         this.statusCode = statusCode
         this.data=null
-        this.message
+        this.message=message
         this.success = false
         this.errors = errors
 
@@ -20,3 +20,4 @@ export class apierrors extends Error{
 
     }
 }
+export {APIError}
