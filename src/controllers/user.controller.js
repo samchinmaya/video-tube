@@ -4,6 +4,28 @@ import { APIError } from "../utils/APIerrors.js";
 import { uploadOnCloudinary } from "../utils/Cloudinary.js";
 import { APIresponse } from "../utils/APIresponse.js";
 
+//Token generation
+const generateAccessAndRefreshTokens = async (userId) => {
+  try {
+    const user = await User.findById(userId)
+    if (!user) {
+      throw new APIError(404, "User not found")
+    }
+    const accessToken = user.generateAccessToken()
+    const refreshToken = user.generateRefreshToken()
+    user.refreshToken = refreshToken
+    await user.save({ validateBeforeSave: false })
+    return { accessToken, refreshToken }
+
+
+  } catch (err) {
+    throw new APIError(500, "Failed to generate tokens");
+
+  }
+}
+
+// user registration
+//
 const registerUser = asyncHandler(async (req, res) => {
   const { username, email, fullname, password } = req.body;
   // check if username, email, and password are provided
@@ -19,14 +41,16 @@ const registerUser = asyncHandler(async (req, res) => {
 
   const avatarLocalPath = req.files?.avatar?.[0]?.path
   const coverImageLocalPath = req.files?.coverImage?.[0]?.path
-
+  console.log(req.files)
   if (!avatarLocalPath) {
     throw new APIError(400, "Avatar is required")
   }
   if (!coverImageLocalPath) {
     throw new APIError(400, "Cover image is required")
   }
+
   //uploading on Cloudinary
+  //
   const avatarUrl = await uploadOnCloudinary(avatarLocalPath)
   const coverImageUrl = await uploadOnCloudinary(coverImageLocalPath)
   if (!avatarUrl) {
@@ -56,6 +80,37 @@ const registerUser = asyncHandler(async (req, res) => {
   )
 });
 
+// user login
+//
+
+const loginUser = async (req, res) => {
+  const {username, email, password} = req.body
+  if (!username || !password) {
+    throw new APIError(400, "Username and password are required")
+  }
+  const user = await User.findOne({$or: [{username}, {email}]})
+  if (!user) {
+    throw new APIError(404, "User not found")
+  }
+  const isPasswordValid = await user.isPasswordCorrect(password)
+  console.log(isPasswordValid)
+  if (!isPasswordValid) {
+    throw new APIError(401, "Invalid password")
+  }
+  const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id)
+  const loggedInUser = await User.findOne(user._id).select("-password -refreshToken")
+  const options = {
+    httpOnly: true,// this means the cookie cannot be accessed by the client
+    secure: true,// this means the cookie can only be sent over HTTPS
 
 
-export { registerUser };
+  }
+  return res.status(200)
+    .cookie("accessToken", accessToken, options)// accessToken and refreshToken are sent as cookies and set the cookie options
+    .cookie("refreshToken", refreshToken, options)// accessToken and refreshToken are sent as cookies and set the cookie options
+    .json(new APIresponse(200, {loggedInUser, accessToken, refreshToken}, "User logged in successfully"))
+}
+
+
+
+export { registerUser, loginUser };
