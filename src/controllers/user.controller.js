@@ -2,7 +2,7 @@ import { asyncHandler } from "../utils/asynchandler.js";
 import { User } from "../models/user.models.js";
 import { APIError } from "../utils/APIerrors.js";
 import { uploadOnCloudinary } from "../utils/Cloudinary.js";
-import { upload } from "../middlewares/multer.middleware.js";
+import { APIresponse } from "../utils/APIresponse.js";
 
 const registerUser = asyncHandler(async (req, res) => {
   const { username, email, fullname, password } = req.body;
@@ -34,7 +34,7 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new APIError(500, "Cover image upload failed")
   }
 
-  await User.create({
+  const user = await User.create({
     username: username.toLowerCase(),
     email: email.toLowerCase(),
     fullname: fullname.toLowerCase(),
@@ -42,8 +42,20 @@ const registerUser = asyncHandler(async (req, res) => {
     coverImage: coverImageUrl.url,
     password
   })
-  // send response
-  res.status(201).json({ message: "User registered successfully" });
+  const createdUser = await User.findById(user._id)
+    .select("-password -refreshToken")
+
+  if (!createdUser) {
+    throw new APIError(500, "User not found")
+  }
+
+  return new APIresponse(201, createdUser, "User registered successfully").json(
+    {
+      statusCode: 201,
+      data: createdUser,
+      message: "User registered successfully",
+    }
+  )
 });
 
 
