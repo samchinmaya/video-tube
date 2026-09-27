@@ -7,7 +7,8 @@ const asyncHandler = (requestHandler)=>{
 
     }
 }
-export {asyncHandler};
+export { asyncHandler };
+
 // either we could do like this OR....
 //export const asyncHandler = (fn)=>(async(req,res,next)=>{
     //try{
@@ -21,3 +22,4 @@ export {asyncHandler};
     //}
 
 //})
+//
