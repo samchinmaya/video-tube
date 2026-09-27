@@ -312,7 +312,7 @@ They produce these shapes:
 }
 ```
 
-> ⚠️ A JSON error-handling middleware is not added yet, so thrown errors currently reach Express's default handler — it uses the right status code but replies with an **HTML** page. See the [Roadmap](#-roadmap).
+> 🧯 A global error handler at the end of `app.js` turns every thrown error into this JSON shape (default status `500`), logs it once, and deletes any temp upload files left behind by the failed request.
 
 ---
 
@@ -328,7 +328,7 @@ They produce these shapes:
 | `ERR_MODULE_NOT_FOUND` | A relative import is missing `.js` (required with ES modules) | Write the full file name, e.g. `"../utils/asyncHandler.js"` |
 | `data and hash arguments required` (500) on login | The password wasn't loaded — the schema hides it with `select: false` — or no password was sent | Load it with `.select("+password")` and require `password` in the request |
 | `401 Unauthorized` on logout | No access token was sent (Postman doesn't send `secure` cookies over `http://localhost`) | Use **Authorization → Bearer Token** with the `accessToken` from login |
-| Leftover files in `public/temp` | A request failed *before* the Cloudinary step, so the temp files weren't cleaned up | Delete them by hand (keep `.gitkeep`) — automatic cleanup is on the Roadmap |
+| Leftover files in `public/temp` | Left from before automatic cleanup was added | Delete them by hand (keep `.gitkeep`) — failed requests now clean up after themselves |
 
 ---
 
@@ -375,7 +375,7 @@ They produce these shapes:
 - [x] User and Video models
 - [x] File upload pipeline (Multer + Cloudinary)
 - [x] User registration with avatar upload
-- [ ] JSON error-handling middleware (+ automatic cleanup of `public/temp` on failed requests)
+- [x] JSON error-handling middleware (+ automatic cleanup of `public/temp` on failed requests)
 - [ ] Ignore uploaded files in git (`public/temp/*`, keep `.gitkeep`)
 - [x] Login and logout (JWT in httpOnly cookies)
 - [x] JWT auth middleware for protected routes

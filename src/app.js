@@ -19,3 +19,23 @@ app.use(cookieParser());
 // routes
 import UserRouter from './routes/user.routes.js';
 app.use('/api/v1/user', UserRouter);
+
+// error handler: must stay after all routes
+import fs from 'fs';
+app.use((err, req, res, next) => {
+    console.log(err);
+    // delete uploaded temp files left behind by a failed request
+    for (const files of Object.values(req.files || {})) {
+        for (const file of files) {
+            if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
+        }
+    }
+    const statusCode = err.statusCode || 500;
+    res.status(statusCode).json({
+        statusCode,
+        data: null,
+        success: false,
+        message: err.message || "Internal Server Error",
+        errors: err.errors || [],
+    });
+});

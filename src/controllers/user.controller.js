@@ -3,7 +3,6 @@ import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-
 //Token generation
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
@@ -82,7 +81,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
 // user login
 //
-const loginUser = async (req, res) => {
+const loginUser = asyncHandler(async (req, res) => {
   const {username, email, password} = req.body
   if (!username && !password) {
     throw new ApiError(400, "Username and password are required")
@@ -99,10 +98,8 @@ const loginUser = async (req, res) => {
   const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id)
   const loggedInUser = await User.findOne(user._id).select("-password -refreshToken")
   const options = {
-    httpOnly: true,// this means the cookie cannot be accessed by the client
-    secure: true,// this means the cookie can only be sent over HTTPS
-
-
+    httpOnly: true,
+    secure: true,
   }
   return res.status(200)
     .cookie("accessToken", accessToken, options)// accessToken and refreshToken are sent as cookies and set the cookie options
@@ -111,9 +108,9 @@ const loginUser = async (req, res) => {
       {
         user: loggedInUser, accessToken
       }, "User logged in successfully"))
-}
+})
 
-const logoutUser = async (req, res) => {
+const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user._id,
     {
@@ -130,6 +127,6 @@ const logoutUser = async (req, res) => {
     .cookie("accessToken", "", options)
     .cookie("refreshToken", "", options)
     .json(new ApiResponse(200, {}, "User logged out successfully"))
-}
+})
 
 export { registerUser, loginUser, logoutUser };
