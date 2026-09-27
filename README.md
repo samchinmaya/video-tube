@@ -77,8 +77,8 @@ video-tube/
 │   ├── db/
 │   │   └── index.js             # MongoDB connection
 │   ├── models/
-│   │   ├── user.models.js       # User schema, password hashing, JWT helpers
-│   │   └── video.models.js      # Video schema + pagination plugin
+│   │   ├── user.model.js        # User schema, password hashing, JWT helpers
+│   │   └── video.model.js       # Video schema + pagination plugin
 │   ├── controllers/
 │   │   └── user.controller.js   # Request handlers for user routes
 │   ├── routes/
@@ -87,10 +87,10 @@ video-tube/
 │   │   ├── auth.middleware.js   # Verifies the JWT and sets req.user
 │   │   └── multer.middleware.js # Saves uploaded files to public/temp
 │   └── utils/
-│       ├── asynchandler.js      # Wraps async routes so errors reach Express
-│       ├── APIerrors.js         # Standard error format
-│       ├── APIresponse.js       # Standard success format
-│       └── Cloudinary.js        # Uploads files to Cloudinary
+│       ├── asyncHandler.js      # Wraps async routes so errors reach Express
+│       ├── ApiError.js          # Standard error format
+│       ├── ApiResponse.js       # Standard success format
+│       └── cloudinary.js        # Uploads files to Cloudinary
 ├── .env                         # Your secrets (not committed)
 └── package.json
 ```
@@ -284,11 +284,11 @@ UserRouter.route('/logout').post(auth, logoutUser);   // auth runs first, then t
 Responses are built with two helper classes in `src/utils/`:
 
 ```js
-// ✅ Success — APIresponse sends itself with the right status code
-return new APIresponse(201, user, "User registered successfully").json(res)
+// ✅ Success — ApiResponse sends itself with the right status code
+return new ApiResponse(201, user, "User registered successfully").json(res)
 
-// ❌ Error — throw an APIError; asyncHandler passes it to Express
-throw new APIError(400, "All fields are required")
+// ❌ Error — throw an ApiError; asyncHandler passes it to Express
+throw new ApiError(400, "All fields are required")
 ```
 
 They produce these shapes:
@@ -325,7 +325,7 @@ They produce these shapes:
 | `Avatar is required` (400) | The image was sent as Text or a link | Set the `avatar` row type to **File** and choose an image |
 | `Avatar upload failed` (500) | Cloudinary rejected the upload — usually a wrong or cut-off `API_KEY` / `API_SECRET` (`unknown api_key`, 401) | Copy both from **Cloudinary Console → Settings → API Keys** into `.env`, check `CLOUDINARY_CLOUD_NAME`, then **restart the server** |
 | `.env` change has no effect | `.env` is only read when the server starts; `node --watch` doesn't reload it | Stop the server (`ctrl + c`) and run `npm run dev` again |
-| `ERR_MODULE_NOT_FOUND` | A relative import is missing `.js` (required with ES modules) | Write the full file name, e.g. `"../utils/asynchandler.js"` |
+| `ERR_MODULE_NOT_FOUND` | A relative import is missing `.js` (required with ES modules) | Write the full file name, e.g. `"../utils/asyncHandler.js"` |
 | `data and hash arguments required` (500) on login | The password wasn't loaded — the schema hides it with `select: false` — or no password was sent | Load it with `.select("+password")` and require `password` in the request |
 | `401 Unauthorized` on logout | No access token was sent (Postman doesn't send `secure` cookies over `http://localhost`) | Use **Authorization → Bearer Token** with the `accessToken` from login |
 | Leftover files in `public/temp` | A request failed *before* the Cloudinary step, so the temp files weren't cleaned up | Delete them by hand (keep `.gitkeep`) — automatic cleanup is on the Roadmap |
