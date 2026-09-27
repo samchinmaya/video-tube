@@ -11,7 +11,7 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new APIError(400, "All fields are required");
   }
   // check if username is already taken
-  const existingUser = await User.findOne({ username });
+  const existingUser = await User.findOne({ $or: [{ username }, { email }] });
   if (existingUser) {
     throw new APIError(409, "Username is already taken");
   }
