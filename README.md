@@ -178,6 +178,44 @@ the port is running at 3000
 | `POST` | `/user/login` | Log in and receive tokens | 📋 Planned |
 | `POST` | `/user/logout` | Log out and clear tokens | 📋 Planned |
 
+### 📝 Register a user
+
+`POST /api/v1/user/register` — send as **`multipart/form-data`** (in Postman: *Body → form-data*), because it includes image files.
+
+| Field | Type | Required |
+|---|---|---|
+| `username` | Text | ✅ |
+| `email` | Text | ✅ |
+| `fullname` | Text | ✅ |
+| `password` | Text | ✅ |
+| `avatar` | File (image) | ✅ |
+| `coverImage` | File (image) | ✅ |
+
+**What happens on the server, in order:**
+
+```
+1. Validate fields      → all text fields present and not empty
+2. Check duplicates     → one query: username OR email already used?
+3. Check files          → avatar and cover image received by Multer
+4. Upload to Cloudinary → both images; temp files are deleted
+5. Create the user      → password hashed by bcrypt before saving
+6. Respond              → the new user, without password or refresh token
+```
+
+**Possible responses:**
+
+| Status | When |
+|---|---|
+| `201` | User registered successfully |
+| `400` | A text field is missing or empty, or the avatar / cover image is missing |
+| `409` | The username or email is already registered |
+| `500` | Image upload to Cloudinary failed |
+
+> 💡 **Why check duplicates in the controller if the schema already has `unique: true`?**
+> Both layers do different jobs:
+> - **Controller check (step 2)** — catches duplicates *early* with a clear `409` message, and **before** the Cloudinary uploads, so no images are wasted on a sign-up that would fail.
+> - **`unique: true` in the schema** — the final guarantee. It blocks the rare case of two identical sign-ups arriving at the same moment. On its own it would only produce a raw MongoDB `E11000` error (a confusing `500`) *after* the uploads.
+
 ### Response format
 
 Every response follows the same shape:
