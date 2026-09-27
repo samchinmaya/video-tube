@@ -16,8 +16,10 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new APIError(409, "Username is already taken");
   }
   // images and avatar
-  const avatarLocalPath = req.files?.avatar[0]?.path
-  const coverImageLocalPath = req.files?.coverImage[0]?.path
+
+  const avatarLocalPath = req.files?.avatar?.[0]?.path
+  const coverImageLocalPath = req.files?.coverImage?.[0]?.path
+
   if (!avatarLocalPath) {
     throw new APIError(400, "Avatar is required")
   }
@@ -50,11 +52,7 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   return new APIresponse(201, createdUser, "User registered successfully").json(
-    {
-      statusCode: 201,
-      data: createdUser,
-      message: "User registered successfully",
-    }
+    res
   )
 });
 

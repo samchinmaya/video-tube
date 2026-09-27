@@ -9,5 +9,8 @@ export class APIresponse{
         this.message = message
         this.success = statusCode<400
     }
+    json(res){
+        return res.status(this.statusCode).json(this)
+    }
 
 }
