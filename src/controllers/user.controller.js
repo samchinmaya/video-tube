@@ -182,15 +182,42 @@ const getCurrentUser = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, { user }, "User fetched successfully"))
 })
 const UpdateAccount = asyncHandler(async (req, res) => {
-  const { username, email, password } = req.body
-  if (!username && !email && !password && username===User.username && email===User.email && password===User.password) {
+  const { email, fullname } = req.body
+  if (!email && !fullname && email===User.email && fullname===User.fullname) {
     throw new ApiError(400, "No fields to update")
   }
-  const user = await User.findByIdAndUpdate(req.user._id, { username, email, password }).select("-password")
+  const user = await User.findByIdAndUpdate(req.user._id, { $set: { email, fullname } }, { new: true }).select("-password")
   if (!user) {
     throw new ApiError(500, "failed to update account")
 
   }
   return res.status(200).json(new ApiResponse(200, { user }, "Account updated successfully"))
 })
-export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, UpdateAccount };
+
+
+const updateAvatar = asyncHandler(async (req, res) => {
+  const avatarLocalPath = req.file?.path;
+  if (!avatarLocalPath) {
+    throw new ApiError(400, "Avatar file is required")
+  }
+  const avatar = await uploadOnCloudinary(avatarLocalPath)
+  if (!avatar.url) {
+    throw new ApiError(500, "failed to upload avatar")
+  }
+  const user = await User.findByIdAndUpdate(req.user._id, { $set: { avatar: avatarLocalPath } }, { new: true }).select("-password")
+  if (!user) {
+    throw new ApiError(500, "failed to update avatar")
+  }
+  return res.status(200).json(new ApiResponse(200, { avatar }, "Avatar updated successfully"))
+})
+
+export {
+  registerUser,
+  loginUser,
+  logoutUser,
+  refreshAccessToken,
+  changeCurrentPassword,
+  getCurrentUser,
+  UpdateAccount,
+  updateAvatar
+};
