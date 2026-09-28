@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { registerUser, loginUser, logoutUser, refreshAccessToken, getCurrentUser } from "../controllers/user.controller.js";
+import { registerUser, loginUser, logoutUser, refreshAccessToken, getCurrentUser, UpdateAccount } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { auth } from "../middlewares/auth.middleware.js";
 
@@ -14,4 +14,6 @@ UserRouter.route('/login').post(loginUser);
 UserRouter.route('/logout').post(auth, logoutUser);
 UserRouter.route('/refresh-token').post(refreshAccessToken);
 UserRouter.route('/current-user').get(auth, getCurrentUser);
+UserRouter.route('/update-account').put(auth, UpdateAccount);
+
 export default UserRouter;
