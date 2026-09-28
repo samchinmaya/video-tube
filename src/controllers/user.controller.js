@@ -186,6 +186,11 @@ const UpdateAccount = asyncHandler(async (req, res) => {
   if (!username && !email && !password && username===User.username && email===User.email && password===User.password) {
     throw new ApiError(400, "No fields to update")
   }
-  const user = await User.findByIdAndUpdate(req.user._id, { username, email, password })
+  const user = await User.findByIdAndUpdate(req.user._id, { username, email, password }).select("-password")
+  if (!user) {
+    throw new ApiError(500, "failed to update account")
+
+  }
+  return res.status(200).json(new ApiResponse(200, { user }, "Account updated successfully"))
 })
-export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser };
+export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, UpdateAccount };
