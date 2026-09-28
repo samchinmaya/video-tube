@@ -181,5 +181,11 @@ const getCurrentUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id)
   return res.status(200).json(new ApiResponse(200, { user }, "User fetched successfully"))
 })
-
+const UpdateAccount = asyncHandler(async (req, res) => {
+  const { username, email, password } = req.body
+  if (!username && !email && !password && username===User.username && email===User.email && password===User.password) {
+    throw new ApiError(400, "No fields to update")
+  }
+  const user = await User.findByIdAndUpdate(req.user._id, { username, email, password })
+})
 export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser };
