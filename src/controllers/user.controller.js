@@ -287,10 +287,15 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, { channel: channel[0] }, "Channel profile fetched successfully"))
 })
 const watchHistory = asyncHandler(async (req, res) => {
+  const userId = req.user?._id
+  if (!userId) {
+    throw new ApiError(401, "Unauthorized")
+  }
+
   const user = await User.aggregate([
     {
       $match: {
-        _id: new mongoose.Types.ObjectId(req.user?._id)
+        _id: new mongoose.Types.ObjectId(userId)
       }
     },
     {
@@ -298,7 +303,37 @@ const watchHistory = asyncHandler(async (req, res) => {
         from: "videos",
         localField: "watchHistory",
         foreignField: "_id",
-        as: "watchHistory"
+        as: "watchHistory",
+        pipeline: [
+          {
+            $lookup: {
+              from: "users",
+              localField: "owner",
+              foreignField: "_id",
+              as: "owner",
+              pipeline: [
+                {
+                  $project: {
+                    fullname: 1,
+                    username: 1,
+                    avatar: 1
+                  }
+                },
+                {
+                  $addFields: {
+                    fullname: "$fullname",
+                    username: "$username",
+                    owner: "$owner"
+                  }
+                }
+              ]
+            }
+          }
+
+        ]
+      },
+      $project: {
+        watchHistory: 1
       }
     }
   ])
