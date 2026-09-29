@@ -19,6 +19,8 @@ app.use(cookieParser());
 // routes
 import UserRouter from './routes/user.routes.js';
 app.use('/api/v1/user', UserRouter);
+import SubscriptionRouter from './routes/subscription.routes.js';
+app.use('/api/v1/subscriptions', SubscriptionRouter);
 
 // error handler: must stay after all routes
 import fs from 'fs';
