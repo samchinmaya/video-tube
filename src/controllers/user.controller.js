@@ -254,17 +254,49 @@ const getChannelProfile = asyncHandler(async (req, res) => {
         subscriptionCount: { $size: "$subscribers" },
         subscribedToCount: { $size: "$subscribedTo" },
         isSubscribed: {
-          if: { $in: [req.user?._id, "$subscriptions.subscriber"] },
-          then: true,
-          else: false
+          $cond: {
+            if: { $in: [req.user?._id, "$subscriptions.subscriber"] },
+            then: true,
+            else: false
+          }
         }
       }
     },
+    {
+      $project: {
+        fullname: 1,
+        username: 1,
+        subscriptionCount: 1,
+        subscribedToCount: 1,
+        isSubscribed: 1,
+        avatar: 1,
+        coverImage: 1,
+        email: 1
+      }
+    },
   ])
-  if (!channel) {
+  console.log(channel)
+  if (!channel?.length) {
     throw new ApiError(404, "channel not found")
   }
   return res.status(200).json(new ApiResponse(200, { channel: channel[0] }, "Channel profile fetched successfully"))
+})
+const watchHistory = asyncHandler(async (req, res) => {
+  const user = await mongoose.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Schema.Types.ObjectId(req.user?._id)
+      }
+    },
+    {
+      $lookup: {
+        from: "videos",
+        localField: "watchHistory",
+        foreignField: "_id",
+        as: "watchHistory"
+      }
+    }
+  ])
 })
 export {
   registerUser,
