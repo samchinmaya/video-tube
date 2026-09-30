@@ -33,7 +33,7 @@ export function SubscribeButton({ channelId, subscribed, onChange }: Props) {
     }
   }
 
-  return subscribed ? (
+  return subscribed && user ? (
     <Button onClick={toggle} disabled={busy}>
       <Bell className="size-4" /> Subscribed
     </Button>
