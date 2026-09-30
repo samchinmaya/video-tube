@@ -1,10 +1,11 @@
 import { Camera, ImagePlus } from "lucide-react";
-import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { Logo } from "../components/Layout";
 import { Alert, Avatar, Button, Field } from "../components/ui";
 import { useAuth } from "../context/AuthContext";
 import { errorMessage } from "../lib/api";
+import { usePreview } from "../lib/useAsync";
 
 function AuthCard({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
   return (
@@ -62,17 +63,6 @@ export function Login() {
       </p>
     </AuthCard>
   );
-}
-
-function usePreview(file: File | null) {
-  const [url, setUrl] = useState<string>();
-  useEffect(() => {
-    if (!file) return setUrl(undefined);
-    const u = URL.createObjectURL(file);
-    setUrl(u);
-    return () => URL.revokeObjectURL(u);
-  }, [file]);
-  return url;
 }
 
 export function Register() {
@@ -153,5 +143,3 @@ export function Register() {
     </AuthCard>
   );
 }
-
-export { usePreview };

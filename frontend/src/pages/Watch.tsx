@@ -15,7 +15,9 @@ export function Watch() {
   const { data: video, loading, error } = useAsync(() => videoService.get(videoId), [videoId]);
   const related = useAsync(() => videoService.list({ limit: 12 }), []);
 
-  useEffect(() => window.scrollTo(0, 0), [videoId]);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [videoId]);
 
   return (
     <div className="mx-auto flex max-w-[1700px] flex-col gap-6 px-4 py-6 sm:px-6 xl:flex-row">

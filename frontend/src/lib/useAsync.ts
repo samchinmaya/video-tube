@@ -35,3 +35,18 @@ export function useMediaQuery(query: string) {
   }, [query]);
   return matches;
 }
+
+// Object URL for previewing a picked file, revoked when the file changes
+export function usePreview(file: File | null) {
+  const [url, setUrl] = useState<string>();
+  useEffect(() => {
+    if (!file) {
+      setUrl(undefined);
+      return;
+    }
+    const u = URL.createObjectURL(file);
+    setUrl(u);
+    return () => URL.revokeObjectURL(u);
+  }, [file]);
+  return url;
+}

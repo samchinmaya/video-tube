@@ -246,7 +246,9 @@ export function Layout() {
   const [expanded, setExpanded] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  useEffect(() => setDrawerOpen(false), [location.pathname]);
+  useEffect(() => {
+    setDrawerOpen(false);
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen">
