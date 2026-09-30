@@ -1,110 +1,114 @@
 <div align="center">
 
-# 🎬 VideoTube
+# 🎬 VideoTube — Frontend
 
-**A YouTube-style video platform backend built with Node.js, Express, and MongoDB.**
+**A YouTube-style web app for the VideoTube backend, built with React, TypeScript and Tailwind CSS.**
 
-Upload videos, manage users, and stream content — the server side of a video sharing app.
+Browse and watch videos, create a channel, subscribe to creators, and manage your profile.
 
-![Node.js](https://img.shields.io/badge/Node.js-ES%20Modules-339933?logo=nodedotjs&logoColor=white)
-![Express](https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white)
-![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose%209-47A248?logo=mongodb&logoColor=white)
-![Cloudinary](https://img.shields.io/badge/Cloudinary-Media%20Storage-3448C5?logo=cloudinary&logoColor=white)
-![JWT](https://img.shields.io/badge/Auth-JWT-000000?logo=jsonwebtokens&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
+![React Router](https://img.shields.io/badge/React%20Router-8-CA4245?logo=reactrouter&logoColor=white)
 ![Status](https://img.shields.io/badge/status-in%20development-orange)
 
 </div>
 
 ---
 
+## 📸 Screenshots
+
+| Home | Watch |
+|---|---|
+| ![Home feed](docs/home.jpg) | ![Watch page](docs/watch.jpg) |
+| **Channel** | **Create account** |
+| ![Channel page](docs/channel.jpg) | ![Register page](docs/register.jpg) |
+
+---
+
 ## 📖 About
 
-VideoTube is a learning project that rebuilds the core of a video platform like YouTube, starting with the backend. It focuses on the real-world pieces every production app needs:
+This is the web client for the [VideoTube backend](../README.md). It talks to the Express API for everything account-related and is ready to switch to real video data as soon as the backend's video routes exist.
 
-- 🔐 **Secure authentication** with hashed passwords and access/refresh tokens
-- ☁️ **Media uploads** handled by Multer and stored on Cloudinary
-- 🗄️ **Clean data models** for users and videos in MongoDB
-- 📄 **Pagination** for video feeds using aggregation pipelines
-- 🧱 **Consistent API responses and errors** across every route
-
-> 🚧 **Work in progress** — this is an MVP under active development. See the [Roadmap](#-roadmap) for what's done and what's next.
+> 🚧 **Work in progress** — the backend doesn't have video, comment, like or history routes yet, so those screens use **sample data** for now. See [Real vs. sample data](#-real-vs-sample-data).
 
 ---
 
 ## ✨ Features
 
-| Feature | Status |
+| Page | What you can do |
 |---|---|
-| Express server with CORS, JSON & cookie parsing | ✅ Done |
-| MongoDB connection with Mongoose | ✅ Done |
-| User model — bcrypt password hashing, JWT access & refresh tokens | ✅ Done |
-| Video model — owner, views, likes, publish state, pagination plugin | ✅ Done |
-| File uploads (Multer → Cloudinary) | ✅ Done |
-| Standard API response & error classes | ✅ Done |
-| User registration (with avatar & cover image upload) | ✅ Done |
-| Login / logout with JWT (httpOnly cookies + Bearer token) | ✅ Done |
-| `auth` middleware for protected routes | ✅ Done |
-| Refresh access token | 📋 Planned |
-| Video upload, update, delete & feed | 📋 Planned |
-| Comments, likes, subscriptions, watch history | 📋 Planned |
+| 🏠 **Home** | Video grid with "Load more" and loading skeletons |
+| 🔍 **Search** | Search videos by title or channel |
+| ▶️ **Watch** | Video player, like, share (copies link), subscribe, expandable description, comments, "Up next" list |
+| 📺 **Channel** | Banner, avatar, subscriber count, *Videos* and *About* tabs; "Customize channel" on your own channel |
+| ⬆️ **Upload** | Drag-and-drop video, thumbnail picker, title/description, public or private, live preview with duration |
+| ⚙️ **Settings** | Update name & email, change avatar & banner, change password |
+| 🕘 **History / 👍 Liked / 📬 Subscriptions** | Your watch history, liked videos, and latest videos from channels you follow |
+| 🔐 **Sign in / Register** | Register with avatar + cover image, sign in with username **or** email |
+
+Also included:
+
+- 📱 **Responsive** — collapsible sidebar on desktop, slide-out drawer and full-width search on mobile
+- 🔄 **Automatic token refresh** — when the access token expires, the app calls `/refresh-token` once and retries the request
+- 🛡️ **Protected routes** — pages like Upload and Settings redirect to sign-in, then send you back where you were
+- 🌙 **Dark theme** throughout
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology |
+| Purpose | Tool |
 |---|---|
-| Runtime | [Node.js](https://nodejs.org/) (ES Modules) |
-| Framework | [Express 5](https://expressjs.com/) |
-| Database | [MongoDB](https://www.mongodb.com/) + [Mongoose 9](https://mongoosejs.com/) |
-| Auth | [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken) + [bcrypt](https://github.com/kelektiv/node.bcrypt.js) |
-| File uploads | [Multer](https://github.com/expressjs/multer) |
-| Media storage | [Cloudinary](https://cloudinary.com/) |
-| Pagination | [mongoose-aggregate-paginate-v2](https://github.com/aravindnc/mongoose-aggregate-paginate-v2) |
+| UI | [React 19](https://react.dev/) |
+| Language | [TypeScript](https://www.typescriptlang.org/) |
+| Build tool / dev server | [Vite](https://vite.dev/) |
+| Styling | [Tailwind CSS 4](https://tailwindcss.com/) |
+| Routing | [React Router](https://reactrouter.com/) |
+| Icons | [Lucide](https://lucide.dev/) |
+| Linting | [oxlint](https://oxc.rs/docs/guide/usage/linter) |
+
+No state-management or data-fetching library is needed — auth lives in a React context, and data is loaded with a small `useAsync` hook.
 
 ---
 
 ## 📁 Project Structure
 
 ```
-video-tube/
+frontend/
 ├── public/
-│   └── temp/                    # Temporary storage for uploads before Cloudinary
+│   └── favicon.svg
 ├── src/
-│   ├── index.js                 # Entry point: loads .env, connects DB, starts server
-│   ├── app.js                   # Express app setup: middleware + routes
-│   ├── constants.js             # Shared constants (database name)
-│   ├── db/
-│   │   └── index.js             # MongoDB connection
-│   ├── models/
-│   │   ├── user.model.js        # User schema, password hashing, JWT helpers
-│   │   └── video.model.js       # Video schema + pagination plugin
-│   ├── controllers/
-│   │   └── user.controller.js   # Request handlers for user routes
-│   ├── routes/
-│   │   └── user.routes.js       # User API endpoints
-│   ├── middlewares/
-│   │   ├── auth.middleware.js   # Verifies the JWT and sets req.user
-│   │   └── multer.middleware.js # Saves uploaded files to public/temp
-│   └── utils/
-│       ├── asyncHandler.js      # Wraps async routes so errors reach Express
-│       ├── ApiError.js          # Standard error format
-│       ├── ApiResponse.js       # Standard success format
-│       └── cloudinary.js        # Uploads files to Cloudinary
-├── .env                         # Your secrets (not committed)
+│   ├── main.tsx                  # Entry point: router + auth provider
+│   ├── App.tsx                   # All routes
+│   ├── index.css                 # Tailwind import + theme colors
+│   ├── components/
+│   │   ├── Layout.tsx            # Navbar, sidebar, drawer, RequireAuth
+│   │   ├── VideoCard.tsx         # Grid card, list row, loading skeletons
+│   │   ├── SubscribeButton.tsx   # Optimistic subscribe/unsubscribe
+│   │   └── ui.tsx                # Button, Field, Avatar, Alert, Spinner…
+│   ├── context/
+│   │   └── AuthContext.tsx       # Current user, login, register, logout
+│   ├── pages/
+│   │   ├── Auth.tsx              # Sign in, Register
+│   │   ├── Feeds.tsx             # Home, Search, History, Liked, Subscriptions
+│   │   ├── Watch.tsx             # Player, actions, comments, up next
+│   │   ├── Channel.tsx           # Channel header + tabs
+│   │   └── Studio.tsx            # Upload, Settings
+│   ├── services/
+│   │   └── index.ts              # Every API call in one place
+│   └── lib/
+│       ├── api.ts                # fetch wrapper: unwraps ApiResponse, refreshes tokens
+│       ├── types.ts              # Types matching the Mongoose models
+│       ├── mock.ts               # Sample videos/comments until the backend has them
+│       ├── format.ts             # 1.2M views, 3 days ago, 12:04
+│       └── useAsync.ts           # Data-loading, media-query and file-preview hooks
+├── docs/                         # README screenshots
+├── vite.config.ts                # Dev proxy to the backend
+├── vercel.json                   # Vercel rewrites (SPA + API proxy)
 └── package.json
 ```
-
----
-
-## 🔄 How an Upload Works
-
-```
-  Client ──► Multer ──► public/temp ──► Cloudinary ──► URL saved in MongoDB
-             (receive)   (temp file)     (store file)    (only the link)
-```
-
-Files are never stored in the database — MongoDB keeps only the Cloudinary URL, which keeps the database small and fast while Cloudinary serves media through its CDN.
 
 ---
 
@@ -113,206 +117,146 @@ Files are never stored in the database — MongoDB keeps only the Cloudinary URL
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) (latest LTS recommended)
-- A [MongoDB Atlas](https://www.mongodb.com/atlas) cluster (free tier works)
-- A [Cloudinary](https://cloudinary.com/) account (free tier works)
+- The **VideoTube backend** set up and running — see the [backend README](../README.md#-getting-started)
 
-### 1. Clone the repository
+### 1. Start the backend
 
-```bash
-git clone https://github.com/samchinmaya/video-tube.git
-cd video-tube
-```
-
-### 2. Install dependencies
+In the project root (`video-tube/`):
 
 ```bash
 npm install
+npm run dev
 ```
 
-### 3. Set up environment variables
+Wait for `the port is running at 3000`.
 
-Create a `.env` file in the project root:
+### 2. Install the frontend
 
-```env
-PORT=3000
-MONGODB_URI=mongodb+srv://<user>:<password>@<cluster-host>
-CORS_ORIGIN=http://localhost:5173
-
-ACCESS_TOKEN_SECRET=<long-random-string>
-ACCESS_TOKEN_EXPIRY=1d
-REFRESH_TOKEN_SECRET=<another-long-random-string>
-REFRESH_TOKEN_EXPIRY=10d
-
-CLOUDINARY_CLOUD_NAME=<your-cloud-name>
-API_KEY=<your-cloudinary-api-key>
-API_SECRET=<your-cloudinary-api-secret>
-```
-
-> 💡 Generate strong secrets with:
-> `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
->
-> ⚠️ Don't add the database name to `MONGODB_URI` — the app appends `/Videotube` automatically.
-
-### 4. Run the server
+In a **second terminal**:
 
 ```bash
-npm run dev     # development — restarts automatically on file changes
-npm start       # production
+cd frontend
+npm install
 ```
 
-You should see:
+### 3. Run it
 
+```bash
+npm run dev
 ```
-DB is Connect for <your-cluster-host>
-the port is running at 3000
-```
+
+Open **http://localhost:5173** 🎉
+
+No `.env` file is needed for local development — the dev server forwards every `/api` request to `http://localhost:3000`.
+
+### Scripts
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Dev server with hot reload at `localhost:5173` |
+| `npm run build` | Type-check, then build to `dist/` |
+| `npm run preview` | Serve the built `dist/` at `localhost:4173` (API proxy included) |
+| `npm run lint` | Lint with oxlint |
+
+> ⚠️ **Don't use `npx serve`.** It serves files as-is: the browser can't run the `.tsx` source, `/api` requests never reach the backend, and refreshing any page other than `/` gives a 404. Use `npm run dev` or `npm run preview`.
 
 ---
 
-## 📡 API Reference
+## 🔌 How It Connects to the Backend
 
-**Base URL:** `http://localhost:3000/api/v1`
+```
+  Browser ──► Vite dev server (:5173) ──► /api/* forwarded ──► Express backend (:3000)
+              serves the React app          same origin, so       MongoDB + Cloudinary
+                                            cookies just work
+```
 
-### Users
+Because the browser only ever talks to `localhost:5173`, the backend's login cookies are **same-origin** and CORS never comes into play.
 
-| Method | Endpoint | Description | Status |
-|---|---|---|---|
-| `POST` | `/user/register` | Create a new account | ✅ |
-| `POST` | `/user/login` | Log in and receive tokens | ✅ |
-| `POST` | `/user/logout` | Log out and clear tokens 🔒 | ✅ |
+Every request goes through `src/lib/api.ts`, which:
 
-🔒 = requires authentication (see [Authentication](#-authentication)).
+1. Sends cookies (`credentials: "include"`) **and** the access token as a `Bearer` header
+2. Unwraps the backend's `ApiResponse` and returns just `data`
+3. Throws an error with the backend's `message` when `success` is `false`
+4. On a `401`, calls `/user/refresh-token` once and retries the original request
 
-### 📝 Register a user
+### Backend endpoints used
 
-`POST /api/v1/user/register` — send as **`multipart/form-data`** (in Postman: *Body → form-data*), because it includes image files.
-
-| Field | Type | Required |
+| Feature | Method | Endpoint |
 |---|---|---|
-| `username` | Text | ✅ |
-| `email` | Text | ✅ |
-| `fullname` | Text | ✅ |
-| `password` | Text | ✅ |
-| `avatar` | File (image) | ✅ |
-| `coverImage` | File (image) | ✅ |
+| Register | `POST` | `/user/register` (multipart: `avatar`, `coverImage`) |
+| Sign in | `POST` | `/user/login` |
+| Sign out | `POST` | `/user/logout` |
+| Restore session | `GET` | `/user/current-user` |
+| Refresh token | `POST` | `/user/refresh-token` |
+| Update name/email | `PUT` | `/user/update-account` |
+| Change password | `PUT` | `/user/change-password` |
+| Change avatar | `PUT` | `/user/update-avatar` (multipart: `avatar`) |
+| Change banner | `PUT` | `/user/update-cover-image` (multipart: `coverImage`) |
+| Channel profile | `GET` | `/user/c/:username` |
+| Subscribe / unsubscribe | `POST` | `/subscriptions/c/:channelId` |
 
-> 📮 **Testing in Postman**
-> - Put **all six fields** in *Body → form-data* — the text fields too.
-> - Postman sends **only the selected body type**: if *form-data* is selected, anything in the *raw* JSON tab is ignored.
-> - Switch the `avatar` and `coverImage` rows from **Text** to **File** and pick images from your computer — a link won't work.
-> - Keys are case-sensitive: `fullname` (all lowercase), `coverImage` (capital **I**).
+---
 
-**What happens on the server, in order:**
+## 🧪 Real vs. Sample Data
 
-```
-1. Validate fields      → all text fields present and not empty
-2. Check duplicates     → one query: username OR email already used?
-3. Check files          → avatar and cover image received by Multer
-4. Upload to Cloudinary → both images; temp files are deleted
-5. Create the user      → password hashed by bcrypt before saving
-6. Respond              → the new user, without password or refresh token
-```
-
-**Possible responses:**
-
-| Status | When |
+| Feature | Source |
 |---|---|
-| `201` | User registered successfully |
-| `400` | A text field is missing or empty, or the avatar / cover image is missing |
-| `409` | The username or email is already registered |
-| `500` | Image upload to Cloudinary failed |
+| Accounts, sign-in, settings | ✅ Backend |
+| Channel pages of registered users | ✅ Backend |
+| Subscribing to registered users | ✅ Backend |
+| Videos, search, upload | 🧪 Sample data |
+| Comments, likes, watch history | 🧪 Sample data |
+| Subscriptions feed | 🧪 Sample data |
 
-> 💡 **Why check duplicates in the controller if the schema already has `unique: true`?**
-> Both layers do different jobs:
-> - **Controller check (step 2)** — catches duplicates *early* with a clear `409` message, and **before** the Cloudinary uploads, so no images are wasted on a sign-up that would fail.
-> - **`unique: true` in the schema** — the final guarantee. It blocks the rare case of two identical sign-ups arriving at the same moment. On its own it would only produce a raw MongoDB `E11000` error (a confusing `500`) *after* the uploads.
+Sample data lives in `src/lib/mock.ts`, is kept in memory, and resets on page reload. Sample channels (like *Code with Ara*) and their videos only exist in the frontend.
 
-### 🔑 Log in
+### Switching to real video data
 
-`POST /api/v1/user/login` — send as **raw JSON** (no files here):
+Once the backend has these routes, set `USE_MOCK_VIDEOS = false` in `src/services/index.ts` — the frontend already calls them:
 
-```json
-{ "username": "sam", "password": "secret123" }
-```
-
-You can log in with `username` **or** `email`; `password` is always required.
-
-**What happens on the server:**
-
-```
-1. Find the user by username OR email  → loaded with .select("+password"),
-                                          because the schema hides the password (select: false)
-2. Check the password                   → bcrypt.compare via user.isPasswordCorrect()
-3. Create tokens                        → access token (1d) + refresh token (10d);
-                                          the refresh token is saved on the user
-4. Respond                              → tokens set as httpOnly cookies,
-                                          user + accessToken in the JSON body
-```
-
-| Status | When |
+| Feature | Expected endpoint |
 |---|---|
-| `200` | Logged in — returns `user` and `accessToken`, and sets the `accessToken` and `refreshToken` cookies |
-| `400` | Missing username/email or password |
-| `404` | No user with that username or email |
-| `401` | Wrong password |
+| Video feed & search | `GET /videos?page=&limit=&query=` |
+| Channel's videos | `GET /videos?username=` |
+| Single video | `GET /videos/:videoId` |
+| Upload | `POST /videos` (multipart: `videoFile`, `thumbnail`, `title`, `description`, `isPublished`) |
+| Comments | `GET` / `POST /comments/:videoId` |
+| Like / unlike | `POST /likes/toggle/v/:videoId` |
+| Liked videos | `GET /likes/videos` |
+| Watch history | `GET /user/history` |
+| Subscriptions feed | `GET /videos/subscriptions` |
 
-> 🔒 The **refresh token is never put in the JSON body** — it only travels in an **httpOnly cookie**, which JavaScript in the browser can't read. The access token is short-lived, so it's also returned in the body for the client to use.
+List endpoints should return the `mongoose-aggregate-paginate-v2` shape (`docs`, `page`, `totalPages`, `hasNextPage`), and each video's `owner` should be populated with `_id`, `username`, `fullname` and `avatar`.
 
-### 🚪 Log out
+---
 
-`POST /api/v1/user/logout` — protected: send the access token (see below).
+## 🌍 Sharing & Deployment
 
-Clears the user's saved refresh token in the database and resets both cookies. Returns `200` "User logged out successfully".
+### On another computer on the same Wi-Fi
 
-### 🔐 Authentication
-
-Protected routes run the `auth` middleware first. It accepts the access token from **either**:
-
-- the `accessToken` **cookie** (browsers send it automatically), or
-- an **`Authorization: Bearer <accessToken>`** header.
-
-If the token is valid, the middleware loads the user and puts it on `req.user`; otherwise it responds `401 Unauthorized`.
-
-```js
-UserRouter.route('/logout').post(auth, logoutUser);   // auth runs first, then the controller
+```bash
+npm run dev -- --host
 ```
 
-> 📮 **In Postman:** the cookies are marked `secure`, so Postman won't send them back over plain `http://localhost`. For protected routes, copy `accessToken` from the login response and use **Authorization → Bearer Token**.
+Open the **Network** address it prints (e.g. `http://192.168.1.x:5173`) on the other device. Both devices must be on the same network, and some college/office Wi-Fi blocks this.
 
-### Response format
+### With a public link (any network)
 
-Responses are built with two helper classes in `src/utils/`:
+Run the app, then in another terminal:
 
-```js
-// ✅ Success — ApiResponse sends itself with the right status code
-return new ApiResponse(201, user, "User registered successfully").json(res)
-
-// ❌ Error — throw an ApiError; asyncHandler passes it to Express
-throw new ApiError(400, "All fields are required")
+```bash
+npx cloudflared tunnel --url http://localhost:4173   # after npm run build && npm run preview
 ```
 
-They produce these shapes:
+Share the `https://…trycloudflare.com` link it prints. `vite.config.ts` already allows `.trycloudflare.com` hosts. Anyone with the link can open the app while the tunnel runs.
 
-```jsonc
-// ✅ Success
-{
-  "statusCode": 200,
-  "data": { },
-  "message": "success",
-  "success": true
-}
+### On Vercel
 
-// ❌ Error
-{
-  "statusCode": 400,
-  "data": null,
-  "message": "Something Went Wrong",
-  "success": false,
-  "errors": []
-}
-```
+1. Host the backend somewhere that runs a Node server (e.g. [Render](https://render.com/))
+2. In `vercel.json`, replace `YOUR-BACKEND-URL` with the backend's address
+3. On Vercel, import the repository and set **Root Directory** to `frontend`
 
-> 🧯 A global error handler at the end of `app.js` turns every thrown error into this JSON shape (default status `500`), logs it once, and deletes any temp upload files left behind by the failed request.
+`vercel.json` sends every page to `index.html` (so refreshing `/watch/…` works) and proxies `/api/*` to the backend, keeping cookies same-origin just like in development.
 
 ---
 
@@ -320,81 +264,26 @@ They produce these shapes:
 
 | You see | Cause | Fix |
 |---|---|---|
-| `Cannot POST /register` (404) | Wrong URL | Use the full path: `http://localhost:3000/api/v1/user/register` |
-| `All fields are required` (400) | A text field is missing or empty — often because it's in the *raw* tab while *form-data* is selected | Add `username`, `email`, `fullname`, `password` as **form-data** rows |
-| `Avatar is required` (400) | The image was sent as Text or a link | Set the `avatar` row type to **File** and choose an image |
-| `Avatar upload failed` (500) | Cloudinary rejected the upload — usually a wrong or cut-off `API_KEY` / `API_SECRET` (`unknown api_key`, 401) | Copy both from **Cloudinary Console → Settings → API Keys** into `.env`, check `CLOUDINARY_CLOUD_NAME`, then **restart the server** |
-| `.env` change has no effect | `.env` is only read when the server starts; `node --watch` doesn't reload it | Stop the server (`ctrl + c`) and run `npm run dev` again |
-| `ERR_MODULE_NOT_FOUND` | A relative import is missing `.js` (required with ES modules) | Write the full file name, e.g. `"../utils/asyncHandler.js"` |
-| `data and hash arguments required` (500) on login | The password wasn't loaded — the schema hides it with `select: false` — or no password was sent | Load it with `.select("+password")` and require `password` in the request |
-| `401 Unauthorized` on logout | No access token was sent (Postman doesn't send `secure` cookies over `http://localhost`) | Use **Authorization → Bearer Token** with the `accessToken` from login |
-| Leftover files in `public/temp` | Left from before automatic cleanup was added | Delete them by hand (keep `.gitkeep`) — failed requests now clean up after themselves |
-
----
-
-## 🗄️ Data Models
-
-<details>
-<summary><b>👤 User</b></summary>
-
-| Field | Type | Notes |
-|---|---|---|
-| `username` | String | Unique, lowercase, indexed |
-| `email` | String | Unique, lowercase |
-| `fullname` | String | Required |
-| `avatar` | String | Cloudinary URL, required |
-| `coverImage` | String | Cloudinary URL |
-| `watchHistory` | [ObjectId → Video] | Videos the user has watched |
-| `password` | String | bcrypt-hashed, hidden from queries by default |
-| `refreshToken` | String | Hidden from queries by default |
-
-</details>
-
-<details>
-<summary><b>🎥 Video</b></summary>
-
-| Field | Type | Notes |
-|---|---|---|
-| `videoFile` | String | Cloudinary URL, unique |
-| `thumbnail` | String | Cloudinary URL |
-| `title` | String | Required |
-| `description` | String | Required |
-| `duration` | Number | In seconds |
-| `views` / `likes` / `dislikes` | Number | Default `0` |
-| `isPublished` | Boolean | Default `false` |
-| `owner` | ObjectId → User | Uploader |
-| `comments` | [ObjectId → Comment] | |
-
-</details>
+| Blank page | Opened with `npx serve` or by opening `index.html` directly | Use `npm run dev` |
+| Sign-in fails with `Request failed (500)` or `(502)`, or every request errors | The backend isn't running | Start it in the project root with `npm run dev` and wait for `port is running at 3000` |
+| `Invalid credentials` | Wrong username/email or password | Usernames are stored lowercase; check the password |
+| `Avatar is required` / `Cover image is required` on register | The backend requires both images | Pick a cover image **and** click the round avatar to add a profile picture |
+| Signed out after every reload on another device | The backend's cookies are `secure`, so browsers drop them on plain `http://192.168.x.x` | Use `localhost`, or an `https` link (tunnel or Vercel) |
+| `Blocked request. This host is not allowed` | Opening the app through an unknown domain | Add the domain to `allowedHosts` in `vite.config.ts` |
+| A sample channel or video is missing after reload | Sample data is in-memory only | Expected — it resets on reload |
+| `Port 5173 is in use` | Another dev server is already running | Stop it, or open the port Vite suggests |
 
 ---
 
 ## 🗺️ Roadmap
 
-- [x] Project setup, database connection, and core utilities
-- [x] User and Video models
-- [x] File upload pipeline (Multer + Cloudinary)
-- [x] User registration with avatar upload
-- [x] JSON error-handling middleware (+ automatic cleanup of `public/temp` on failed requests)
-- [ ] Ignore uploaded files in git (`public/temp/*`, keep `.gitkeep`)
-- [x] Login and logout (JWT in httpOnly cookies)
-- [x] JWT auth middleware for protected routes
-- [ ] Refresh-token endpoint to get a new access token
-- [ ] Video upload, update, delete, and paginated feed
-- [ ] Comments, likes, subscriptions, and playlists
-- [ ] Watch history
-- [ ] Frontend
-
----
-
-## 🤝 Contributing
-
-Contributions, ideas, and feedback are welcome!
-
-1. Fork the repository
-2. Create a branch: `git checkout -b feature/your-feature`
-3. Commit your changes: `git commit -m "Add your feature"`
-4. Push the branch: `git push origin feature/your-feature`
-5. Open a Pull Request
-
----
+- [x] Layout: navbar, collapsible sidebar, mobile drawer
+- [x] Sign in, register, sign out, session restore, token refresh
+- [x] Home, search, watch, channel pages
+- [x] Upload page with preview
+- [x] Settings: profile, avatar & banner, password
+- [x] History, liked videos, subscriptions feed (sample data)
+- [ ] Switch videos, comments, likes and history to the real backend
+- [ ] Playlists
+- [ ] Light theme
+- [ ] Tests
