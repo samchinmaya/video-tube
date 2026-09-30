@@ -6,6 +6,8 @@
 
 Browse and watch videos, create a channel, subscribe to creators, and manage your profile.
 
+### 🌐 [Live demo → samchinmaya.github.io/video-tube](https://samchinmaya.github.io/video-tube/)
+
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
@@ -29,7 +31,7 @@ Browse and watch videos, create a channel, subscribe to creators, and manage you
 
 ## 📖 About
 
-This is the web client for the [VideoTube backend](../README.md). It talks to the Express API for everything account-related and is ready to switch to real video data as soon as the backend's video routes exist.
+This is the web client for the VideoTube backend (the Express + MongoDB API in [`src/`](src/)). It talks to the Express API for everything account-related and is ready to switch to real video data as soon as the backend's video routes exist.
 
 > 🚧 **Work in progress** — the backend doesn't have video, comment, like or history routes yet, so those screens use **sample data** for now. See [Real vs. sample data](#-real-vs-sample-data).
 
@@ -117,7 +119,7 @@ frontend/
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) (latest LTS recommended)
-- The **VideoTube backend** set up and running — see the [backend README](../README.md#-getting-started)
+- A `.env` file in the project root with `PORT=3000`, `MONGODB_URI`, `CORS_ORIGIN`, `ACCESS_TOKEN_SECRET`, `ACCESS_TOKEN_EXPIRY`, `REFRESH_TOKEN_SECRET`, `REFRESH_TOKEN_EXPIRY`, `CLOUDINARY_CLOUD_NAME`, `API_KEY` and `API_SECRET` (never commit it)
 
 ### 1. Start the backend
 
@@ -250,13 +252,26 @@ npx cloudflared tunnel --url http://localhost:4173   # after npm run build && np
 
 Share the `https://…trycloudflare.com` link it prints. `vite.config.ts` already allows `.trycloudflare.com` hosts. Anyone with the link can open the app while the tunnel runs.
 
-### On Vercel
+### Live: GitHub Pages + Render
 
-1. Host the backend somewhere that runs a Node server (e.g. [Render](https://render.com/))
-2. In `vercel.json`, replace `YOUR-BACKEND-URL` with the backend's address
-3. On Vercel, import the repository and set **Root Directory** to `frontend`
+The live demo is deployed in two parts:
 
-`vercel.json` sends every page to `index.html` (so refreshing `/watch/…` works) and proxies `/api/*` to the backend, keeping cookies same-origin just like in development.
+| Part | Host | How it deploys |
+|---|---|---|
+| Frontend | [GitHub Pages](https://samchinmaya.github.io/video-tube/) | `.github/workflows/deploy-pages.yml` builds `frontend/` and publishes it on every push to `main` that touches `frontend/` |
+| Backend | [Render](https://render.com/) (free plan) | `render.yaml` blueprint; Render redeploys on every push to `main` |
+
+**Setting up the backend on Render (one time):**
+
+1. On Render, choose **New → Blueprint** and pick this repository. It reads `render.yaml`.
+2. Fill in `MONGODB_URI`, `CLOUDINARY_CLOUD_NAME`, `API_KEY` and `API_SECRET`. The JWT secrets are generated for you, and `CORS_ORIGIN` is already set to `https://samchinmaya.github.io`.
+3. In MongoDB Atlas → **Network Access**, allow `0.0.0.0/0` so Render can connect.
+4. Copy the service URL, then in GitHub go to **Settings → Secrets and variables → Actions → Variables** and add `VITE_API_URL` = `https://<your-service>.onrender.com/api/v1`.
+5. Re-run the **Deploy frontend to GitHub Pages** workflow from the **Actions** tab.
+
+Because the frontend and backend are on different sites, the backend sets its cookies with `SameSite=None; Secure`, and the frontend also sends the access token as a `Bearer` header.
+
+> 💤 Render's free plan sleeps after 15 minutes without traffic, so the first request after a break can take up to a minute.
 
 ---
 
@@ -268,6 +283,7 @@ Share the `https://…trycloudflare.com` link it prints. `vite.config.ts` alread
 | Sign-in fails with `Request failed (500)` or `(502)`, or every request errors | The backend isn't running | Start it in the project root with `npm run dev` and wait for `port is running at 3000` |
 | `Invalid credentials` | Wrong username/email or password | Usernames are stored lowercase; check the password |
 | `Avatar is required` / `Cover image is required` on register | The backend requires both images | Pick a cover image **and** click the round avatar to add a profile picture |
+| Sign-in fails on the live demo | The backend on Render is asleep or `VITE_API_URL` isn't set | Wait a minute and retry; check the Actions variable |
 | Signed out after every reload on another device | The backend's cookies are `secure`, so browsers drop them on plain `http://192.168.x.x` | Use `localhost`, or an `https` link (tunnel or Vercel) |
 | `Blocked request. This host is not allowed` | Opening the app through an unknown domain | Add the domain to `allowedHosts` in `vite.config.ts` |
 | A sample channel or video is missing after reload | Sample data is in-memory only | Expected — it resets on reload |

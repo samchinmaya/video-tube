@@ -102,6 +102,7 @@ const loginUser = asyncHandler(async (req, res) => {
   const options = {
     httpOnly: true,
     secure: true,
+    sameSite: "none", // the deployed frontend is on another site (GitHub Pages)
   }
   return res.status(200)
     .cookie("accessToken", accessToken, options)// accessToken and refreshToken are sent as cookies and set the cookie options
@@ -124,6 +125,7 @@ const logoutUser = asyncHandler(async (req, res) => {
   const options = {
     httpOnly: true,
     secure: true,
+    sameSite: "none", // the deployed frontend is on another site (GitHub Pages)
   }
   return res.status(200)
     .cookie("accessToken", "", options)
@@ -152,6 +154,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   const options = {
     httpOnly: true,
     secure: true,
+    sameSite: "none", // the deployed frontend is on another site (GitHub Pages)
   }
   return res.status(200)
     .cookie("accessToken", accessToken, options)

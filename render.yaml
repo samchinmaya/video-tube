@@ -1,0 +1,27 @@
+# Render blueprint for the backend: https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: video-tube-api
+    runtime: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    envVars:
+      - key: CORS_ORIGIN
+        value: https://samchinmaya.github.io
+      - key: ACCESS_TOKEN_SECRET
+        generateValue: true
+      - key: REFRESH_TOKEN_SECRET
+        generateValue: true
+      - key: ACCESS_TOKEN_EXPIRY
+        value: 1d
+      - key: REFRESH_TOKEN_EXPIRY
+        value: 10d
+      - key: MONGODB_URI
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: API_KEY
+        sync: false
+      - key: API_SECRET
+        sync: false
