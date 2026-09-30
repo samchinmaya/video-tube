@@ -56,12 +56,14 @@ function VideoDetails({ video }: { video: Video & { isLiked?: boolean } }) {
 
   async function toggleLike() {
     if (!user) return navigate("/login");
-    setLiked(!liked);
-    setLikes((n) => n + (liked ? -1 : 1));
-    const res = await videoService.toggleLike(video._id).catch(() => ({ isLiked: liked }));
-    if (res.isLiked === liked) {
-      setLiked(liked);
-      setLikes(video.likes);
+    const prev = liked;
+    setLiked(!prev);
+    setLikes((n) => n + (prev ? -1 : 1));
+    try {
+      await videoService.toggleLike(video._id);
+    } catch {
+      setLiked(prev);
+      setLikes((n) => n + (prev ? 1 : -1));
     }
   }
 
