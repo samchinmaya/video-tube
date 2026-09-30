@@ -11,5 +11,10 @@ export default defineConfig({
     proxy: {
       '/api': { target: 'http://localhost:3000', changeOrigin: true },
     },
+    // Accept requests arriving through a Cloudflare quick tunnel
+    allowedHosts: ['.trycloudflare.com'],
+  },
+  preview: {
+    allowedHosts: ['.trycloudflare.com'],
   },
 })
