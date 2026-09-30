@@ -9,7 +9,7 @@ import {
   changeCurrentPassword,
   updateAvatar,
   updateCoverImage,
-  getChannelProfile,
+  getUserChannelProfile,
 } from "../controllers/user.controller.js";
 
 
@@ -32,7 +32,7 @@ UserRouter.route('/refresh-token').post(refreshAccessToken);
 UserRouter.route('/current-user').get(auth, getCurrentUser);
 UserRouter.route('/update-account').put(auth, UpdateAccount);
 UserRouter.route('/change-password').put(auth, changeCurrentPassword);
-UserRouter.route('/update-avatar').put(auth, updateAvatar);
-UserRouter.route('/update-cover-image').put(auth, updateCoverImage);
-UserRouter.route('/getChannelProfile').get(auth, getChannelProfile);
+UserRouter.route('/update-avatar').put(auth, upload.single('avatar'), updateAvatar);
+UserRouter.route('/update-cover-image').put(auth, upload.single('coverImage'), updateCoverImage);
+UserRouter.route("/c/:username").get(auth, getUserChannelProfile);
 export default UserRouter;
