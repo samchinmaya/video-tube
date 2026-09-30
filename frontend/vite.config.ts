@@ -4,6 +4,8 @@ import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // GitHub Pages serves the site from /video-tube/, so the Pages build sets BASE_PATH
+  base: process.env.BASE_PATH ?? '/',
   plugins: [react(), tailwindcss()],
   server: {
     // Forward API calls to the Express backend so cookies are same-origin
