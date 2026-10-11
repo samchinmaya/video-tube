@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ten Flights to Save</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=B612:wght@400;700&family=B612+Mono:wght@400;700&family=Saira+Extra+Condensed:wght@600;800&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main class="wrap">
+
+  <!-- Hangar: pick a flight -->
+  <section id="hangar">
+    <header class="hero">
+      <p class="eyebrow">Aviation history quiz</p>
+      <h1>Ten flights<br><span>to save</span></h1>
+      <p class="hero-lede">Ten real airliner accidents, ten questions each. Every right answer climbs your aircraft 1,000 ft and every wrong one drops it 1,000 ft. Answer all ten correctly to save the flight and earn its badge.</p>
+      <p class="rules">
+        <span>Start <b>5,000 ft</b></span>
+        <span>Right answer <b class="up">+1,000 ft</b></span>
+        <span>Wrong answer <b class="down">−1,000 ft</b></span>
+        <span>Ground <b>0 ft</b> after 5 wrong</span>
+        <span>Badge <b>10 / 10</b></span>
+      </p>
+    </header>
+
+    <div class="board-head">
+      <h2>Flight strips</h2>
+      <div class="badge-tally"><span class="tally-pips" id="tally-pips"></span><span id="badge-count">0 of 10 saved</span></div>
+    </div>
+    <ol class="strips" id="strips"></ol>
+
+    <div class="footnote">
+      <p>Ranked by lives lost in accidental airliner crashes. Deliberate acts such as bombings, shoot-downs and the September 11 attacks are not included. Air India Flight 171 (June 2025) is left out while its investigation is still open.</p>
+      <p>Every flight here was real. The questions are drawn from the official investigations so that each lesson is remembered alongside the people who were lost.</p>
+    </div>
+  </section>
+
+  <!-- Briefing before takeoff -->
+  <section id="briefing" hidden>
+    <div class="brief">
+      <p class="eyebrow">Pre-flight briefing</p>
+      <div>
+        <p class="brief-call" id="br-call"></p>
+        <h2 id="br-name"></h2>
+      </div>
+      <dl class="facts" id="br-facts"></dl>
+      <p class="brief-text" id="br-text"></p>
+      <p class="rules">
+        <span>Start <b>5,000 ft</b></span>
+        <span>Right <b class="up">+1,000 ft</b></span>
+        <span>Wrong <b class="down">−1,000 ft</b></span>
+        <span>Save it <b>10 / 10</b></span>
+      </p>
+      <div class="actions">
+        <button class="btn primary" id="take-off" type="button">Take off</button>
+        <button class="btn" id="br-back" type="button">Back to hangar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- In flight -->
+  <section id="flight" hidden>
+    <header class="flight-bar">
+      <div>
+        <p class="eyebrow" id="fl-call"></p>
+        <h2 id="fl-name"></h2>
+      </div>
+      <button class="btn ghost" id="abort" type="button">Back to hangar</button>
+    </header>
+
+    <div class="cockpit">
+      <div class="sky" id="sky">
+        <div class="cloud c1"></div>
+        <div class="cloud c2"></div>
+        <div class="cloud c3"></div>
+        <div class="cloud c4"></div>
+        <div class="ground"></div>
+        <div class="impact"></div>
+        <div class="plane">
+          <svg viewBox="0 0 160 60">
+            <path d="M18 24 L6 4 L22 4 L44 24 Z" fill="var(--accent)"/>
+            <path d="M10 30 Q10 23 22 23 L128 23 Q148 23 156 31 Q148 38 128 38 L22 38 Q10 38 10 30 Z" fill="var(--plane-body)" stroke="var(--plane-line)" stroke-width="1.5"/>
+            <path d="M14 31 L2 38 L16 38 L30 31 Z" fill="var(--plane-wing)" stroke="var(--plane-line)" stroke-width="1"/>
+            <path d="M138 26 L149 28.5 L147 31 L138 30 Z" fill="var(--plane-line)"/>
+            <line x1="40" y1="28" x2="130" y2="28" stroke="var(--plane-line)" stroke-width="2.4" stroke-dasharray="2.5 4"/>
+            <path d="M68 33 L52 52 L66 52 L96 33 Z" fill="var(--plane-wing)" stroke="var(--plane-line)" stroke-width="1"/>
+            <rect x="70" y="40" width="22" height="8" rx="4" fill="var(--plane-body)" stroke="var(--plane-line)" stroke-width="1.2"/>
+            <rect x="10" y="33.5" width="146" height="1.6" fill="var(--accent)" opacity=".85"/>
+          </svg>
+        </div>
+        <p class="hud" id="hud" hidden></p>
+        <button class="view-btn" id="view-btn" type="button" hidden>Camera: Chase</button>
+        <div class="pad" id="pad" hidden>
+          <button type="button" data-k="w" aria-label="Climb (W)">W</button>
+          <button type="button" data-k="a" aria-label="Bank left (A)">A</button>
+          <button type="button" data-k="s" aria-label="Descend (S)">S</button>
+          <button type="button" data-k="d" aria-label="Bank right (D)">D</button>
+        </div>
+        <div class="alti">
+          <div class="alti-read"><span>ALT</span><b id="alt-read">05,000</b><span>FT</span></div>
+          <div class="alti-scale" id="alti-scale"><div class="alti-ptr"></div></div>
+        </div>
+      </div>
+
+      <div class="qpanel">
+        <div class="qmeta"><span id="q-count">Question 1 of 10</span><span id="q-score">Right 0 · Wrong 0</span></div>
+        <div class="pips" id="pips" aria-hidden="true"></div>
+        <h3 class="qtext" id="q-text" aria-live="polite"></h3>
+        <ol class="options" id="options"></ol>
+        <p class="keys-hint" id="keys-hint">Keys 1–4 to answer</p>
+        <div class="feedback" id="feedback" hidden aria-live="polite">
+          <p class="fb-head" id="fb-head"></p>
+          <p id="fb-why"></p>
+        </div>
+        <div class="actions"><button class="btn primary" id="next" type="button" hidden>Next question</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Outcome -->
+  <section id="result" hidden>
+    <div class="result">
+      <div class="result-card" id="res-card">
+        <div id="res-visual"></div>
+        <p class="eyebrow" id="res-eyebrow"></p>
+        <h2 id="res-title"></h2>
+        <p id="res-sub"></p>
+        <p class="result-score" id="res-score"></p>
+        <div class="actions">
+          <button class="btn primary" id="retry" type="button">Fly again</button>
+          <button class="btn" id="res-hangar" type="button">Back to hangar</button>
+        </div>
+      </div>
+      <article class="debrief">
+        <h3>What actually happened</h3>
+        <p id="res-debrief"></p>
+        <h3>What changed afterward</h3>
+        <p id="res-legacy"></p>
+        <p class="memorial" id="res-memorial"></p>
+      </article>
+    </div>
+  </section>
+
+</main>
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+<script src="sim3d.js"></script>
+<script src="incidents.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
