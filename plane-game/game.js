@@ -7,7 +7,7 @@
   const MAX_ALT = START_ALT + STEP * 10;
   const QUESTIONS_PER_FLIGHT = 10;
   const STORE_KEY = "tenFlightsToSave.v1";
-  const KEYS = ["A", "B", "C", "D"];
+  const KEYS = ["1", "2", "3", "4"]; // answer keys; W A S D fly the plane
 
   const $ = (sel) => document.querySelector(sel);
   const byId = (id) => INCIDENTS.find((x) => x.id === id);
@@ -308,11 +308,36 @@
     $("#res-hangar").addEventListener("click", toHangar);
     $("#view-btn").addEventListener("click", cycleView);
 
+    // On-screen W A S D pad mirrors the keyboard and works with touch
+    const padBtn = (k) => document.querySelector(`#pad [data-k="${k}"]`);
+    $("#pad").addEventListener("pointerdown", (e) => {
+      const b = e.target.closest("[data-k]");
+      if (!b || !sim) return;
+      e.preventDefault();
+      b.setPointerCapture(e.pointerId);
+      b.classList.add("on");
+      sim.setKey(b.dataset.k, true);
+    });
+    for (const type of ["pointerup", "pointercancel", "lostpointercapture"]) {
+      $("#pad").addEventListener(type, (e) => {
+        const b = e.target.closest("[data-k]");
+        if (!b || !sim) return;
+        b.classList.remove("on");
+        sim.setKey(b.dataset.k, false);
+      });
+    }
+    $("#pad").addEventListener("contextmenu", (e) => e.preventDefault());
+    const lightPad = (e, on) => {
+      const b = padBtn(e.key.toLowerCase());
+      if (b) b.classList.toggle("on", on);
+    };
+    document.addEventListener("keydown", (e) => { if (state.screen === "flight") lightPad(e, true); });
+    document.addEventListener("keyup", (e) => lightPad(e, false));
+
     document.addEventListener("keydown", (e) => {
       if (state.screen !== "flight" || e.metaKey || e.ctrlKey || e.altKey) return;
       if (e.key === "v" || e.key === "V") { cycleView(); return; }
-      const k = e.key.toUpperCase();
-      const idx = KEYS.indexOf(k) >= 0 ? KEYS.indexOf(k) : ["1", "2", "3", "4"].indexOf(k);
+      const idx = KEYS.indexOf(e.key);
       if (idx >= 0 && state.picked == null) { e.preventDefault(); answer(idx); }
       else if (e.key === "Enter" && state.picked != null && document.activeElement !== $("#next")) { e.preventDefault(); nextQuestion(); }
     });
@@ -329,7 +354,8 @@
       $("#sky").classList.add("webgl");
       $("#hud").hidden = false;
       $("#view-btn").hidden = false;
-      $("#keys-hint").textContent = "Keys A–D or 1–4 to answer · V to change camera";
+      $("#pad").hidden = false;
+      $("#keys-hint").textContent = "Keys 1–4 to answer · W A S D to fly · V to change camera";
     }
     buildAltimeter();
     wire();

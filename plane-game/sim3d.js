@@ -6,7 +6,8 @@
 
   // ---- Scale and motion ----
   const TILE = 4000;              // terrain tile size (world units ≈ metres)
-  const SEGMENTS = 96;            // terrain grid resolution per tile
+  const SEGMENTS = 64;            // terrain grid resolution per tile
+  const MAX_TRIM = 40;            // how far W/S can move the plane off its assigned altitude (units)
   const FT_TO_UNITS = 0.075;      // compresses game feet into the visible scene
   const CRUISE_SPEED = 140;       // units per second (~272 knots)
 
@@ -352,8 +353,8 @@
     const terrainMat = new T.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0, flatShading: false });
     const lightsMat = new T.PointsMaterial({ size: 14, vertexColors: true, blending: T.AdditiveBlending, depthWrite: false, transparent: true, map: glowTexture(), alphaTest: 0.01 });
     const tiles = [];
-    for (let c = -1; c <= 1; c++) {
-      for (let r = 0; r < 4; r++) {
+    for (let c = -2; c <= 2; c++) {
+      for (let r = -2; r <= 2; r++) {
         const m = new T.Mesh(terrainGeo, terrainMat);
         m.userData = { col: c, row: r };
         scene.add(m);
@@ -388,7 +389,9 @@
     let y = 600, targetY = 600, vy = 0, pitch = 0;
     let mode = "fly";           // fly | crashing | crashed
     let speed = CRUISE_SPEED;
-    let z = 0, t = 0;
+    let x = 0, z = 0, t = 0;
+    let yaw = 0, roll = 0, trim = 0;   // pilot input: heading, bank, altitude trim
+    const keys = { w: false, a: false, s: false, d: false };
     let shake = 0, smokeTimer = 0;
     let running = false, last = 0, hudTimer = 0;
     let viewIndex = 0;
@@ -399,6 +402,14 @@
     ];
     const camPos = new T.Vector3(40, 620, 80);
     const tmpV = new T.Vector3(), tmpL = new T.Vector3();
+    const fwd = new T.Vector3(0, 0, -1), right = new T.Vector3(1, 0, 0), UP = new T.Vector3(0, 1, 0);
+
+    function placeCloud(s, initial) {
+      const along = initial ? 300 + Math.random() * 7000 : 6000 + Math.random() * 2000;
+      const side = (Math.random() - 0.5) * 5000;
+      s.position.x = x + fwd.x * along + right.x * side;
+      s.position.z = z + fwd.z * along + right.z * side;
+    }
 
     function heightAt(wx, wz) {
       return terrainNoise(wx / TILE, wz / TILE, env.ridged) ** 1.7 * env.heightScale;
@@ -462,7 +473,8 @@
         const size = cc.size * (0.6 + Math.random() * 0.9);
         s.scale.set(size * 1.6, size, 1);
         s.material.rotation = (Math.random() - 0.5) * 0.3;
-        s.position.set((Math.random() - 0.5) * 5000, cc.base + Math.random() * (cc.top - cc.base), z - 300 - Math.random() * 7000);
+        s.position.y = cc.base + Math.random() * (cc.top - cc.base);
+        placeCloud(s, true);
         cloudGroup.add(s);
         clouds.push({ s });
       }
@@ -509,7 +521,7 @@
     }
 
     function reset() {
-      mode = "fly"; speed = CRUISE_SPEED; shake = 0;
+      mode = "fly"; speed = CRUISE_SPEED; shake = 0; roll = 0; trim = 0;
       for (const p of smoke) { p.s.visible = false; p.life = 0; }
       for (const f of fire) f.visible = false;
       flash.intensity = 0;
@@ -535,11 +547,25 @@
     function update(dt) {
       t += dt;
       if (!plane) return;
+      const flying = mode === "fly";
+
+      // Pilot input: W/S trim altitude around the assigned level, A/D bank and turn
+      if (flying) {
+        const climbIn = (keys.w ? 1 : 0) - (keys.s ? 1 : 0);
+        if (climbIn) trim = Math.max(-MAX_TRIM, Math.min(MAX_TRIM, trim + climbIn * 22 * dt));
+        else trim -= trim * (1 - Math.exp(-dt * 0.35)); // autopilot drifts back to the assigned altitude
+        const bankIn = (keys.a ? 1 : 0) - (keys.d ? 1 : 0);
+        const wantRoll = bankIn * 0.5 + Math.sin(t * 0.35) * 0.04;
+        roll += (wantRoll - roll) * (1 - Math.exp(-dt * 2.2));
+        yaw += (9.81 * Math.tan(roll) / speed) * 2 * dt;   // coordinated turn, sped up for play
+      }
+      fwd.set(-Math.sin(yaw), 0, -Math.cos(yaw));
+      right.set(-fwd.z, 0, fwd.x);
 
       // Vertical motion
-      if (mode === "fly") {
+      if (flying) {
         const prev = y;
-        y += (targetY - y) * (1 - Math.exp(-dt * 1.5));
+        y += (targetY + trim - y) * (1 - Math.exp(-dt * 1.5));
         vy = (y - prev) / Math.max(dt, 1e-4);
         const want = Math.max(-0.32, Math.min(0.32, Math.atan2(vy, speed) * 2.6));
         pitch += (want - pitch) * (1 - Math.exp(-dt * 4));
@@ -548,27 +574,27 @@
         y += vy * dt;
         speed = Math.min(speed + 20 * dt, 190);
         pitch += (-0.42 - pitch) * (1 - Math.exp(-dt * 2));
-        const ground = heightAt(0, z - 20);
+        const ground = heightAt(x + fwd.x * 20, z + fwd.z * 20);
         if (y <= ground + 4) {
           y = ground + 2;
           mode = "crashed";
           speed = 0;
           shake = 1;
           flash.intensity = 60000;
-          flash.position.set(0, y + 10, z);
-          plane.rotation.z = 0.5;
+          flash.position.set(x, y + 10, z);
+          roll = 0.5;
           pitch = -0.18;
-          for (let i = 0; i < 14; i++) spawnSmoke(tmpV.set(0, y, z));
+          for (let i = 0; i < 14; i++) spawnSmoke(tmpV.set(x, y, z));
         }
       }
 
-      z -= speed * dt;
+      x += fwd.x * speed * dt;
+      z += fwd.z * speed * dt;
 
       // Aircraft attitude with light turbulence
-      const turb = mode === "fly" ? Math.sin(t * 1.7) * 0.006 + Math.sin(t * 3.1) * 0.004 : 0;
-      plane.position.set(0, y + (mode === "fly" ? Math.sin(t * 0.9) * 0.8 : 0), z);
-      plane.rotation.x = pitch + turb;
-      if (mode === "fly") plane.rotation.z = Math.sin(t * 0.35) * 0.05 + turb * 2;
+      const turb = flying ? Math.sin(t * 1.7) * 0.006 + Math.sin(t * 3.1) * 0.004 : 0;
+      plane.position.set(x, y + (flying ? Math.sin(t * 0.9) * 0.8 : 0), z);
+      plane.rotation.set(pitch + turb, yaw, roll + turb * 2, "YXZ");
 
       // Navigation lights
       for (const n of plane.userData.nav) {
@@ -577,31 +603,28 @@
         n.s.visible = ph < 0.09 || (n.blink === 0.6 && ph > 0.6 && ph < 0.7);
       }
 
-      // Terrain tile recycling
-      const row0 = Math.round(z / TILE);
-      for (const m of tiles) {
-        m.position.set(m.userData.col * TILE, 0, (row0 + 1 - m.userData.row) * TILE);
-      }
+      // Terrain tiles stay centred on the aircraft
+      const cx = Math.round(x / TILE), cz = Math.round(z / TILE);
+      for (const m of tiles) m.position.set((cx + m.userData.col) * TILE, 0, (cz + m.userData.row) * TILE);
 
-      // Cloud recycling
+      // Clouds behind or far to the side are moved ahead
       for (const c of clouds) {
-        if (c.s.position.z > z + 600) {
-          c.s.position.z -= 7600;
-          c.s.position.x = (Math.random() - 0.5) * 5000;
-        }
+        const dx = c.s.position.x - x, dz = c.s.position.z - z;
+        const along = dx * fwd.x + dz * fwd.z, side = dx * right.x + dz * right.z;
+        if (along < -600 || along > 9000 || Math.abs(side) > 3600) placeCloud(c.s, false);
       }
-      if (overcast) { overcast.position.x = 0; overcast.position.z = z; }
+      if (overcast) overcast.position.set(x, env.overcast, z);
 
       // Crash effects
       if (mode === "crashed") {
         smokeTimer -= dt;
-        if (smokeTimer <= 0) { spawnSmoke(tmpV.set(0, y, z)); smokeTimer = 0.12; }
+        if (smokeTimer <= 0) { spawnSmoke(tmpV.set(x, y, z)); smokeTimer = 0.12; }
         flash.intensity *= Math.exp(-dt * 1.4);
         fire.forEach((f, i) => {
           f.visible = true;
-          f.position.set(Math.sin(i * 2.1) * 9, y + 2 + Math.abs(Math.sin(t * 7 + i)) * 4, z + Math.cos(i * 1.7) * 9);
-          const s = 10 + Math.sin(t * 9 + i * 1.3) * 3;
-          f.scale.set(s, s * 1.3, 1);
+          f.position.set(x + Math.sin(i * 2.1) * 9, y + 2 + Math.abs(Math.sin(t * 7 + i)) * 4, z + Math.cos(i * 1.7) * 9);
+          const sz = 10 + Math.sin(t * 9 + i * 1.3) * 3;
+          f.scale.set(sz, sz * 1.3, 1);
           f.material.opacity = 0.75 + Math.sin(t * 13 + i) * 0.2;
         });
       }
@@ -610,8 +633,8 @@
         p.life -= dt;
         p.s.position.addScaledVector(p.vel, dt);
         const k = 1 - p.life / p.max;
-        const s = p.size0 * (1 + k * 4);
-        p.s.scale.set(s, s, 1);
+        const sz = p.size0 * (1 + k * 4);
+        p.s.scale.set(sz, sz, 1);
         p.s.material.opacity = Math.min(1, k * 6) * (1 - k) * 0.85;
         if (p.life <= 0) p.s.visible = false;
       }
@@ -622,12 +645,14 @@
         if (view.name === "Cockpit") view.off.z = -plane.userData.length / 2 + 4.2;
         plane.updateMatrixWorld();
         camera.position.copy(view.off).applyMatrix4(plane.matrixWorld);
+        camera.up.copy(UP).applyQuaternion(plane.quaternion);
         camera.lookAt(tmpL.copy(view.look).applyMatrix4(plane.matrixWorld));
         camPos.copy(camera.position);
       } else {
+        camera.up.copy(UP);
         tmpV.set(30 + Math.sin(t * 0.07) * 14, 11 + Math.sin(t * 0.05) * 4, 76);
         if (mode === "crashed") tmpV.set(120, 45, 170);
-        tmpV.add(plane.position);
+        tmpV.applyAxisAngle(UP, yaw).add(plane.position);
         camPos.lerp(tmpV, 1 - Math.exp(-dt * (mode === "crashed" ? 0.8 : 3)));
         camera.position.copy(camPos);
         if (shake > 0) {
@@ -635,7 +660,7 @@
           camera.position.y += (Math.random() - 0.5) * shake * 6;
           shake = Math.max(0, shake - dt * 0.8);
         }
-        camera.lookAt(tmpL.set(0, plane.position.y + 2, plane.position.z - 22));
+        camera.lookAt(tmpL.copy(plane.position).addScaledVector(fwd, 22).setY(plane.position.y + 2));
       }
       sky.position.copy(camera.position);
       stars.position.copy(camera.position);
@@ -649,10 +674,12 @@
       if (hud && hudTimer <= 0) {
         hudTimer = 0.15;
         const ias = Math.round(speed * 1.944);
-        const deg = (plane.rotation.x * 180 / Math.PI);
+        const deg = pitch * 180 / Math.PI;
+        let hdg = Math.round(((-yaw * 180 / Math.PI) % 360 + 360) % 360);
+        if (hdg === 0) hdg = 360;
         hud.textContent = mode === "crashed"
-          ? "IAS 0 KT   PITCH --"
-          : `IAS ${ias} KT   PITCH ${deg >= 0 ? "+" : "−"}${Math.abs(deg).toFixed(1)}°`;
+          ? "IAS 0 KT   HDG ---   PITCH --"
+          : `IAS ${ias} KT   HDG ${String(hdg).padStart(3, "0")}   PITCH ${deg >= 0 ? "+" : "−"}${Math.abs(deg).toFixed(1)}°`;
       }
     }
 
@@ -664,6 +691,16 @@
       camera.updateProjectionMatrix();
     }
     if (window.ResizeObserver) new ResizeObserver(resize).observe(container);
+
+    // W A S D flight controls (keyboard; touch buttons call setKey)
+    function setKey(k, down) { if (k in keys) keys[k] = down; }
+    window.addEventListener("keydown", (e) => {
+      if (!running || e.metaKey || e.ctrlKey || e.altKey) return;
+      const k = e.key.toLowerCase();
+      if (k in keys) { keys[k] = true; e.preventDefault(); }
+    });
+    window.addEventListener("keyup", (e) => setKey(e.key.toLowerCase(), false));
+    window.addEventListener("blur", () => { for (const k in keys) keys[k] = false; });
     window.addEventListener("resize", resize);
 
     function frame(now) {
@@ -680,6 +717,7 @@
       setAltitude,
       crash,
       reset,
+      setKey,
       get crashed() { return mode !== "fly"; },
       cycleView() { viewIndex = (viewIndex + 1) % VIEWS.length; return VIEWS[viewIndex].name; },
       get viewName() { return VIEWS[viewIndex].name; },
@@ -690,7 +728,7 @@
         last = performance.now();
         requestAnimationFrame(frame);
       },
-      stop() { running = false; }
+      stop() { running = false; for (const k in keys) keys[k] = false; }
     };
   }
 

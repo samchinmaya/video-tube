@@ -94,6 +94,12 @@
         </div>
         <p class="hud" id="hud" hidden></p>
         <button class="view-btn" id="view-btn" type="button" hidden>Camera: Chase</button>
+        <div class="pad" id="pad" hidden>
+          <button type="button" data-k="w" aria-label="Climb (W)">W</button>
+          <button type="button" data-k="a" aria-label="Bank left (A)">A</button>
+          <button type="button" data-k="s" aria-label="Descend (S)">S</button>
+          <button type="button" data-k="d" aria-label="Bank right (D)">D</button>
+        </div>
         <div class="alti">
           <div class="alti-read"><span>ALT</span><b id="alt-read">05,000</b><span>FT</span></div>
           <div class="alti-scale" id="alti-scale"><div class="alti-ptr"></div></div>
@@ -105,7 +111,7 @@
         <div class="pips" id="pips" aria-hidden="true"></div>
         <h3 class="qtext" id="q-text" aria-live="polite"></h3>
         <ol class="options" id="options"></ol>
-        <p class="keys-hint" id="keys-hint">Keys A–D or 1–4 to answer</p>
+        <p class="keys-hint" id="keys-hint">Keys 1–4 to answer</p>
         <div class="feedback" id="feedback" hidden aria-live="polite">
           <p class="fb-head" id="fb-head"></p>
           <p id="fb-why"></p>

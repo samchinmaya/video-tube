@@ -15,7 +15,18 @@ Badges and best scores are kept in the browser's `localStorage`.
 
 The flight is rendered in real time with [three.js](https://threejs.org/) (WebGL), loaded from jsDelivr. Each accident has its own setting: fog over Tenerife, sunset over the mountains for JAL 123, night with town lights for Charkhi Dadri and China Airlines 140, desert at dusk for Saudia 163, and an Antarctic whiteout for Erebus. The airliner model matches the type (747, DC-10, L-1011, A300, DC-8) with navigation lights and strobes.
 
-- Press **V** or the camera button to switch between Chase, Wing and Cockpit views.
+### Controls
+
+| Key | Action |
+| --- | --- |
+| **1–4** | Answer the question |
+| **W / S** | Climb / descend a little around the assigned altitude (autopilot eases back when released) |
+| **A / D** | Bank left / right and turn |
+| **V** | Switch camera: Chase, Wing, Cockpit |
+| **Enter** | Next question |
+
+On touch screens, use the on-screen W A S D pad. Your altitude score still comes only from your answers.
+
 - If WebGL is unavailable, the game falls back to the flat 2D view.
 
 ## Run it

@@ -333,6 +333,33 @@ p { margin: 0; }
 .hud { top: 10px; padding: 7px 10px; white-space: pre; font-variant-numeric: tabular-nums; }
 .view-btn { bottom: 10px; padding: 8px 11px; border: 1px solid color-mix(in srgb, var(--inst-ink) 28%, transparent); cursor: pointer; }
 .view-btn:hover { background: var(--inst-bg); }
+.pad {
+  position: absolute;
+  left: 10px;
+  bottom: 50px;
+  display: grid;
+  grid-template-columns: repeat(3, 34px);
+  grid-template-areas: ". w ." "a s d";
+  gap: 4px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.pad button {
+  height: 34px;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--inst-ink) 28%, transparent);
+  background: color-mix(in srgb, var(--inst-bg) 74%, transparent);
+  color: var(--inst-ink);
+  font: 700 13px/1 var(--font-mono);
+  cursor: pointer;
+  touch-action: none;
+}
+.pad button[data-k="w"] { grid-area: w; }
+.pad button[data-k="a"] { grid-area: a; }
+.pad button[data-k="s"] { grid-area: s; }
+.pad button[data-k="d"] { grid-area: d; }
+.pad button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 
 /* Altimeter */
 .alti {
