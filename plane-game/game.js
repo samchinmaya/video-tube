@@ -25,6 +25,7 @@
 
   let state = { screen: "hangar" };
   let motionTimer = null;
+  let sim = null; // 3D flight view, when WebGL is available
 
   function shuffled(n) {
     const a = Array.from({ length: n }, (_, i) => i);
@@ -54,6 +55,7 @@
   // ---- Screens ----
   function show(screen) {
     for (const id of ["hangar", "briefing", "flight", "result"]) $("#" + id).hidden = id !== screen;
+    if (sim) { if (screen === "flight") sim.start(); else sim.stop(); }
   }
 
   function renderHangar() {
@@ -100,6 +102,11 @@
     $("#fl-name").textContent = inc.name;
     setAltitude(state.alt);
     $("#sky").classList.toggle("crashed", state.over === "crash");
+    if (sim) {
+      sim.setIncident(inc.id);
+      sim.setAltitude(state.alt);
+      if (state.over === "crash" && !sim.crashed) sim.crash();
+    }
 
     $("#q-count").textContent = `Question ${state.q + 1} of ${QUESTIONS_PER_FLIGHT}`;
     $("#q-score").textContent = `Right ${state.correct} · Wrong ${state.wrong}`;
@@ -221,6 +228,11 @@
 
   function takeOff() {
     const inc = byId(state.id);
+    if (sim) {
+      sim.setIncident(inc.id);
+      sim.reset();
+      sim.setAltitude(START_ALT, true);
+    }
     go({
       screen: "flight",
       id: inc.id,
@@ -294,9 +306,11 @@
     $("#next").addEventListener("click", nextQuestion);
     $("#retry").addEventListener("click", () => { $("#sky").classList.remove("crashed"); takeOff(); });
     $("#res-hangar").addEventListener("click", toHangar);
+    $("#view-btn").addEventListener("click", cycleView);
 
     document.addEventListener("keydown", (e) => {
       if (state.screen !== "flight" || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === "v" || e.key === "V") { cycleView(); return; }
       const k = e.key.toUpperCase();
       const idx = KEYS.indexOf(k) >= 0 ? KEYS.indexOf(k) : ["1", "2", "3", "4"].indexOf(k);
       if (idx >= 0 && state.picked == null) { e.preventDefault(); answer(idx); }
@@ -304,8 +318,19 @@
     });
   }
 
+  function cycleView() {
+    if (sim) $("#view-btn").textContent = "Camera: " + sim.cycleView();
+  }
+
   function start(data) {
     if (data && data.screen) state = data;
+    sim = window.Sim3D ? window.Sim3D.create($("#sky"), $("#hud")) : null;
+    if (sim) {
+      $("#sky").classList.add("webgl");
+      $("#hud").hidden = false;
+      $("#view-btn").hidden = false;
+      $("#keys-hint").textContent = "Keys A–D or 1–4 to answer · V to change camera";
+    }
     buildAltimeter();
     wire();
     render();

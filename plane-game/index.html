@@ -73,7 +73,7 @@
     </header>
 
     <div class="cockpit">
-      <div class="sky" id="sky" aria-hidden="true">
+      <div class="sky" id="sky">
         <div class="cloud c1"></div>
         <div class="cloud c2"></div>
         <div class="cloud c3"></div>
@@ -92,6 +92,8 @@
             <rect x="10" y="33.5" width="146" height="1.6" fill="var(--accent)" opacity=".85"/>
           </svg>
         </div>
+        <p class="hud" id="hud" hidden></p>
+        <button class="view-btn" id="view-btn" type="button" hidden>Camera: Chase</button>
         <div class="alti">
           <div class="alti-read"><span>ALT</span><b id="alt-read">05,000</b><span>FT</span></div>
           <div class="alti-scale" id="alti-scale"><div class="alti-ptr"></div></div>
@@ -138,6 +140,8 @@
   </section>
 
 </main>
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+<script src="sim3d.js"></script>
 <script src="incidents.js"></script>
 <script src="game.js"></script>
 </body>

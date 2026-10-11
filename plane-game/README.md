@@ -11,6 +11,13 @@ A browser quiz game about the ten deadliest accidental airliner crashes. Each fl
 
 Badges and best scores are kept in the browser's `localStorage`.
 
+## 3D flight view
+
+The flight is rendered in real time with [three.js](https://threejs.org/) (WebGL), loaded from jsDelivr. Each accident has its own setting: fog over Tenerife, sunset over the mountains for JAL 123, night with town lights for Charkhi Dadri and China Airlines 140, desert at dusk for Saudia 163, and an Antarctic whiteout for Erebus. The airliner model matches the type (747, DC-10, L-1011, A300, DC-8) with navigation lights and strobes.
+
+- Press **V** or the camera button to switch between Chase, Wing and Cockpit views.
+- If WebGL is unavailable, the game falls back to the flat 2D view.
+
 ## Run it
 
 No build step. Open `index.html` in a browser, or serve the folder:
@@ -26,6 +33,7 @@ npx serve plane-game
 | `index.html` | Page markup: hangar, briefing, flight and result screens |
 | `styles.css` | Theme tokens (light and dark), layout and animation |
 | `game.js` | Game state, scoring, altitude animation and badge storage |
+| `sim3d.js` | three.js scene: terrain, sky, weather, aircraft models, cameras and crash effects |
 | `incidents.js` | The ten incidents and their 100 questions (correct answer listed first; options are shuffled at runtime) |
 
 ## The ten flights
